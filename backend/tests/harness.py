@@ -15,8 +15,9 @@ See ``.cursor/skills/harness/SKILL.md`` for the full harness-coding guide
 (file map, invariants, extension recipes, testing pyramid).
 """
 
-from typing import Any, List, Optional
+from typing import Any, AsyncIterator, Dict, List, Optional, Tuple, Union
 
+from app.domain.external.engine import Engine, EngineContext, EngineEvent
 from app.domain.models.memory import Memory
 from app.domain.models.message import LLMMessage, ToolCall
 from app.domain.models.plan import Plan
@@ -24,6 +25,7 @@ from app.domain.models.session import SessionStatus
 from app.domain.models.tool_result import ToolResult
 from app.domain.services.agents.base import BaseAgent
 from app.domain.services.flows.agent_loop import AgentLoopFlow
+from app.domain.services.flows.cli_engine import CliEngineFlow
 from app.domain.services.flows.plan_act import PlanActFlow
 from app.domain.services.tools.message import MessageToolkit
 
@@ -86,6 +88,12 @@ class FakeSandbox:
 
     def __init__(self) -> None:
         self.shell_exec_calls = 0
+        # CLI engine (agy/Claude Code) stubs — Issue #30
+        self.engine_start_calls: List[dict] = []
+        self.engine_sent_lines: List[str] = []
+        self.engine_status_calls = 0
+        self.engine_status_response: dict = {"alive": True, "returncode": None, "last_seq": 0, "started_at": 0.0}
+        self.engine_stop_calls: List[str] = []
 
     async def file_write(self, **kwargs: Any) -> ToolResult:
         return ToolResult(success=True, message="written")
@@ -120,16 +128,47 @@ class FakeSandbox:
     async def kill_process(self, id: str) -> ToolResult:
         return ToolResult(success=True, data={})
 
+    # -- CLI engine (agy/Claude Code) stubs — Issue #30 --------------------
+
+    async def engine_start(self, engine_id: str, argv: List[str], env: dict, cwd: str) -> ToolResult:
+        self.engine_start_calls.append({"engine_id": engine_id, "argv": argv, "env": env, "cwd": cwd})
+        return ToolResult(success=True, data={"engine_id": engine_id, "pid": 1, "alive": True, "started_at": 0.0, "reused": False})
+
+    async def engine_send(self, engine_id: str, line: str) -> ToolResult:
+        self.engine_sent_lines.append(line)
+        return ToolResult(success=True, data={"ok": True, "bytes": len(line)})
+
+    async def engine_events(self, engine_id: str, from_seq: int = 0) -> AsyncIterator[dict]:
+        return
+        yield {}  # pragma: no cover - makes this an async generator; unused by FakeEngine-based tests
+
+    async def engine_status(self, engine_id: str) -> ToolResult:
+        self.engine_status_calls += 1
+        return ToolResult(success=True, data=self.engine_status_response)
+
+    async def engine_stop(self, engine_id: str, signal: Optional[str] = None) -> ToolResult:
+        self.engine_stop_calls.append(engine_id)
+        return ToolResult(success=True, data={"ok": True, "returncode": 0})
+
 
 class FakeSession:
     def __init__(
         self,
         status: SessionStatus = SessionStatus.PENDING,
         plan: Plan | None = None,
+        conversation_ref: Optional[str] = None,
+        engine_last_seq: int = 0,
+        title: Optional[str] = None,
     ) -> None:
         self.status = status
         self.project_id = None
         self.plan = plan
+        # CLI engine (agy/Claude Code) fields — Issue #30 (them vao Session
+        # that o commit "truong engine tren Session"; FakeSession di truoc
+        # vi CliEngineFlow chi can duck-type, khong phu thuoc pydantic model).
+        self.conversation_ref = conversation_ref
+        self.engine_last_seq = engine_last_seq
+        self.title = title
 
     def get_last_plan(self):
         return self.plan
@@ -141,6 +180,9 @@ class FakeSessionRepository:
     def __init__(self, session: FakeSession) -> None:
         self.session = session
         self.status_updates: list[SessionStatus] = []
+        self.titles: list[str] = []
+        self.engine_cursor_updates: list[int] = []
+        self.conversation_ref_updates: list[Optional[str]] = []
 
     async def find_by_id(self, session_id: str):
         return self.session
@@ -148,6 +190,18 @@ class FakeSessionRepository:
     async def update_status(self, session_id: str, status: SessionStatus) -> None:
         self.session.status = status
         self.status_updates.append(status)
+
+    async def update_title(self, session_id: str, title: str) -> None:
+        self.session.title = title
+        self.titles.append(title)
+
+    async def update_engine_cursor(self, session_id: str, seq: int) -> None:
+        self.session.engine_last_seq = seq
+        self.engine_cursor_updates.append(seq)
+
+    async def update_conversation_ref(self, session_id: str, conversation_ref: Optional[str]) -> None:
+        self.session.conversation_ref = conversation_ref
+        self.conversation_ref_updates.append(conversation_ref)
 
 
 class StubAgent(BaseAgent):
@@ -157,6 +211,97 @@ class StubAgent(BaseAgent):
 
     def build_system_prompt(self) -> str:
         return "test system prompt"
+
+
+class FakeEngine:
+    """Engine gia lap (Issue #30): phat lai mot danh sach `EngineEvent` da
+    soan san qua `events()`, khong goi sandbox/CLI thuc nao. Dich NDJSON cua
+    tung CLI cu the (agy) -> EngineEvent da duoc kiem rieng trong
+    `test_agy_adapter.py`; FakeEngine cho phep `test_cli_engine_flow.py` kiem
+    CliEngineFlow (dich EngineEvent -> AgentEvent + may trang thai) doc lap
+    voi adapter CLI nao.
+
+    `scripted` nhan mot trong hai dang:
+    - `list[EngineEvent]` — seq tu dong danh tu 1.
+    - `list[tuple[int, EngineEvent]]` — tu chon seq (dung khi can mo phong
+      nhieu event chia seq, vd usage+done cung mot dong NDJSON goc).
+    """
+
+    def __init__(
+        self,
+        scripted: Union[List[EngineEvent], List[Tuple[int, EngineEvent]]],
+        conversation_ref: Optional[str] = None,
+        alive_after_events: bool = True,
+    ) -> None:
+        if scripted and isinstance(scripted[0], tuple):
+            self._scripted: List[Tuple[int, EngineEvent]] = list(scripted)  # type: ignore[arg-type]
+        else:
+            self._scripted = [(i + 1, ev) for i, ev in enumerate(scripted)]  # type: ignore[arg-type]
+        self._conversation_ref = conversation_ref
+        self._alive = True
+        self._alive_after_events = alive_after_events
+        self.last_start_reused = True
+        self.started_ctx: Optional[EngineContext] = None
+        self.sent: List[Tuple[str, Optional[List[str]]]] = []
+        self.stopped = False
+
+    async def start(self, ctx: EngineContext) -> None:
+        self.started_ctx = ctx
+        if ctx.conversation_ref:
+            self._conversation_ref = ctx.conversation_ref
+
+    async def send(self, text: str, attachments: Optional[List[str]] = None) -> None:
+        self.sent.append((text, attachments))
+
+    async def events(self, from_seq: int = 0) -> AsyncIterator[Tuple[int, EngineEvent]]:
+        for seq, ev in self._scripted:
+            if seq <= from_seq:
+                continue
+            if ev.kind == "init" and ev.conversation_ref:
+                self._conversation_ref = ev.conversation_ref
+            yield seq, ev
+        self._alive = self._alive_after_events
+
+    async def stop(self) -> None:
+        self.stopped = True
+        self._alive = False
+
+    async def destroy(self) -> None:
+        pass
+
+    @property
+    def conversation_ref(self) -> Optional[str]:
+        return self._conversation_ref
+
+    @property
+    def alive(self) -> bool:
+        return self._alive
+
+
+def build_cli_engine_flow(
+    engine: Engine,
+    *,
+    session: Optional[FakeSession] = None,
+    sandbox: Optional[FakeSandbox] = None,
+    session_repository: Optional[FakeSessionRepository] = None,
+    model: str = "gemini-3.8-flash-low",
+    effort: str = "low",
+    idle_timeout: int = 600,
+    max_turn_seconds: int = 3600,
+    status_ping_interval: int = 60,
+) -> CliEngineFlow:
+    return CliEngineFlow(
+        agent_id="agent-1",
+        session_id="session-1",
+        session_repository=session_repository or FakeSessionRepository(session or FakeSession()),
+        sandbox=sandbox or FakeSandbox(),
+        engine=engine,
+        model=model,
+        effort=effort,
+        idle_timeout=idle_timeout,
+        max_turn_seconds=max_turn_seconds,
+        status_ping_interval=status_ping_interval,
+    )
 
 
 def build_plan_act_flow(

@@ -15,35 +15,23 @@ khong co nguon thu hai nao can tron theo timestamp o day.
 """
 import json
 import logging
-import re
 from collections import deque
 from typing import Any, AsyncIterator, Deque, List, Optional, Tuple
 
 from app.domain.external.engine import (
+    PROGRESS_TOOL_NAMES,
     Engine,
     EngineContext,
     EngineErrorCode,
     EngineEvent,
+    strip_mcp_prefix,
 )
 from app.domain.external.sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
-# Nhan dien tool MCP cua harness (sandbox/mcp/server.py, FastMCP "gen-agents-sandbox",
-# dang ky duoi khoa "sandbox" — spec 02 muc 5). CHUA DO duoc agy dat tien to
-# gi thuc su khi hien thi tool_name trong NDJSON cua no ⇒ viet khoan dung,
-# do thuc khi nghiem thu (#1b, docs/design/dot-2-cli-engine.md muc 8).
-_MCP_PREFIX = re.compile(r"^(?:mcp__)?(?:gen-agents-)?sandbox(?:__|[.:/])")
-_PROGRESS_TOOLS = {"plan_update", "message_ask_user", "message_notify_user"}
+_PROGRESS_TOOLS = PROGRESS_TOOL_NAMES
 _STDERR_TAIL_MAXLEN = 50
-
-
-def strip_mcp_prefix(tool_name: Optional[str]) -> str:
-    """Bo tien to MCP cua harness neu co; tra ve ten khong doi neu khong co
-    tien to nao khop (cho phep agy in ten "tran" khong tien to)."""
-    name = tool_name or ""
-    match = _MCP_PREFIX.match(name)
-    return name[match.end():] if match else name
 
 
 def classify_error(text: Optional[str]) -> EngineErrorCode:
@@ -84,6 +72,11 @@ class _ProcessEngineBase(Engine):
         self._conversation_ref: Optional[str] = None
         self._alive = False
         self._stderr_tail: Deque[str] = deque(maxlen=_STDERR_TAIL_MAXLEN)
+        #: True neu /engine/start tai su dung tien trinh dang song (reused);
+        #: False neu phai spawn tien trinh MOI (process cu da chet hoac chua
+        #: tung chay). CliEngineFlow dung co nay de quyet dinh co can bao
+        #: "lich su truoc do khong noi duoc" khong (thiet ke muc 3, buoc 3).
+        self.last_start_reused: bool = False
 
     # -- hooks lop con phai cai dat --------------------------------------
     def _build_argv(self, ctx: EngineContext) -> List[str]:
@@ -109,6 +102,7 @@ class _ProcessEngineBase(Engine):
             raise RuntimeError(f"Khong khoi chay duoc engine: {result.message}")
         data = result.data or {}
         self._alive = bool(data.get("alive", True))
+        self.last_start_reused = bool(data.get("reused", False))
         logger.info(
             "engine %s khoi chay (reused=%s, pid=%s)",
             self._engine_id, data.get("reused"), data.get("pid"),

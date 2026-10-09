@@ -16,8 +16,30 @@ pydantic: `EngineEvent` KHONG di qua bien serialize (duoc dich sang
 `AgentEvent` ngay trong flow) nen khong can validate chay-thoi, tranh phi
 pydantic moi dong NDJSON (xem thiet ke muc 2).
 """
+import re
 from dataclasses import dataclass, field
 from typing import Any, AsyncIterator, Literal, Optional, Protocol, Tuple
+
+# Nhan dien tool MCP cua harness (sandbox/mcp/server.py, FastMCP
+# "gen-agents-sandbox", dang ky duoi khoa "sandbox" — spec 02 muc 5). CHUA DO
+# duoc CLI (agy/claude) dat tien to gi thuc su khi hien thi tool_name trong
+# NDJSON cua no ⇒ viet khoan dung, do thuc khi nghiem thu (#1b, docs/design/
+# dot-2-cli-engine.md muc 8). Dung chung cho moi adapter Engine VA cho
+# CliEngineFlow.tool_group() (muc 3.2 cua thiet ke) nen dat o domain layer,
+# khong phai infrastructure.
+MCP_TOOL_PREFIX = re.compile(r"^(?:mcp__)?(?:gen-agents-)?sandbox(?:__|[.:/])")
+
+# 3 tool "tien do & hoi nguoi dung" (spec 02 muc 3.4) — khong phat ToolEvent
+# thuong, duoc dich thanh plan/ask_user/notify rieng.
+PROGRESS_TOOL_NAMES = frozenset({"plan_update", "message_ask_user", "message_notify_user"})
+
+
+def strip_mcp_prefix(tool_name: Optional[str]) -> str:
+    """Bo tien to MCP cua harness neu co; tra ve ten khong doi neu khong co
+    tien to nao khop (cho phep CLI in ten "tran" khong tien to)."""
+    name = tool_name or ""
+    match = MCP_TOOL_PREFIX.match(name)
+    return name[match.end():] if match else name
 
 EngineEventKind = Literal[
     "init",
