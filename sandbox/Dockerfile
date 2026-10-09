@@ -7,9 +7,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV HOSTNAME=sandbox
 
 # Configure apt source to use Aliyun mirror
-RUN sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g' /etc/apt/sources.list && \
-    sed -i 's|http://security.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g' /etc/apt/sources.list && \
-    sed -i 's|http://ports.ubuntu.com/ubuntu-ports/|http://mirrors.aliyun.com/ubuntu-ports/|g' /etc/apt/sources.list
 
 # Update and install basic tools
 RUN apt-get update && apt-get install -y \
@@ -45,7 +42,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa && \
 RUN pip3 install uv
 
 # Configure uv to use Aliyun mirror
-ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+# UV_INDEX_URL mirror override removed for local build test
 
 # Install Node.js 20.18.0
 RUN mkdir -p /etc/apt/keyrings && \
@@ -57,7 +54,6 @@ RUN mkdir -p /etc/apt/keyrings && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure npm to use Aliyun mirror
-RUN npm config set registry https://registry.npmmirror.com
 
 # Install Google Chrome
 RUN add-apt-repository ppa:xtradeb/apps -y && \
