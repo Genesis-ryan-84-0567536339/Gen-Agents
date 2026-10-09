@@ -1,4 +1,5 @@
-from typing import Dict, Any, Optional, List, BinaryIO
+from typing import AsyncIterator, Dict, Any, Optional, List, BinaryIO
+import json
 import uuid
 import httpx
 import docker
@@ -24,6 +25,12 @@ class DockerSandbox(Sandbox):
     def __init__(self, ip: str = None, container_name: str = None):
         """Initialize Docker sandbox and API interaction client"""
         self.client = httpx.AsyncClient(timeout=600)
+        # Client rieng cho SSE dai (/engine/events) — httpx.AsyncClient(timeout=600)
+        # cua self.client cat ket noi sau 10 phut; engine events co the song
+        # lau hon (docs/design/dot-2-cli-engine.md muc 1.4).
+        self._engine_sse_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(connect=10, read=None, write=10, pool=10)
+        )
         self.ip = ip
         self.base_url = f"http://{self.ip}:8080"
         self._vnc_url = f"ws://{self.ip}:5901"
@@ -232,6 +239,62 @@ class DockerSandbox(Sandbox):
             f"{self.base_url}/api/v1/shell/kill",
             json={"id": session_id}
         )
+        return ToolResult(**response.json())
+
+    # ------------------------------------------------------------------
+    # CLI engine (agy / Claude Code) — docs/design/dot-2-cli-engine.md muc 1.4
+    # ------------------------------------------------------------------
+
+    async def engine_start(
+        self,
+        engine_id: str,
+        argv: List[str],
+        env: Dict[str, str],
+        cwd: str,
+    ) -> ToolResult:
+        response = await self.client.post(
+            f"{self.base_url}/api/v1/engine/start",
+            json={"engine_id": engine_id, "argv": argv, "env": env, "cwd": cwd},
+        )
+        return ToolResult(**response.json())
+
+    async def engine_send(self, engine_id: str, line: str) -> ToolResult:
+        response = await self.client.post(
+            f"{self.base_url}/api/v1/engine/send",
+            json={"engine_id": engine_id, "line": line},
+        )
+        return ToolResult(**response.json())
+
+    async def engine_events(
+        self, engine_id: str, from_seq: int = 0
+    ) -> AsyncIterator[Dict[str, Any]]:
+        """Doc SSE tu /api/v1/engine/events bang client rieng (khong bi
+        httpx.AsyncClient(timeout=600) cua self.client cat sau 10 phut)."""
+        url = f"{self.base_url}/api/v1/engine/events"
+        params = {"engine_id": engine_id, "from_seq": from_seq}
+        async with self._engine_sse_client.stream("GET", url, params=params) as response:
+            response.raise_for_status()
+            async for raw_line in response.aiter_lines():
+                if not raw_line or raw_line.startswith(":"):
+                    continue
+                if raw_line.startswith("data: "):
+                    try:
+                        yield json.loads(raw_line[len("data: "):])
+                    except ValueError:
+                        logger.warning("engine_events(%s): dong SSE khong phai JSON hop le", engine_id)
+
+    async def engine_status(self, engine_id: str) -> ToolResult:
+        response = await self.client.get(
+            f"{self.base_url}/api/v1/engine/status",
+            params={"engine_id": engine_id},
+        )
+        return ToolResult(**response.json())
+
+    async def engine_stop(self, engine_id: str, signal: Optional[str] = None) -> ToolResult:
+        payload: Dict[str, Any] = {"engine_id": engine_id}
+        if signal:
+            payload["signal"] = signal
+        response = await self.client.post(f"{self.base_url}/api/v1/engine/stop", json=payload)
         return ToolResult(**response.json())
 
     async def file_write(self, file: str, content: str, append: bool = False, 
@@ -488,6 +551,8 @@ class DockerSandbox(Sandbox):
         try:
             if self.client:
                 await self.client.aclose()
+            if self._engine_sse_client:
+                await self._engine_sse_client.aclose()
             if self.container_name:
                 docker_client = docker.from_env()
                 docker_client.containers.get(self.container_name).remove(force=True)
