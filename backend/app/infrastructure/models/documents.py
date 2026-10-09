@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from app.domain.models.agent import Agent
 from app.domain.models.event import AgentEvent
 from app.infrastructure.models.memory_serialization import deserialize_memory, serialize_memory
-from app.domain.models.session import Session, SessionStatus, TaskMode
+from app.domain.models.session import EngineKind, Session, SessionStatus, TaskMode
 from app.domain.models.file import FileInfo
 from app.domain.models.user import User, UserRole
 from app.domain.models.project import Project
@@ -123,6 +123,10 @@ class SessionDocument(BaseDocument[Session], id_field="session_id", domain_model
     is_pinned: Optional[bool] = False
     project_id: Optional[str] = None
     task_mode: Optional[TaskMode] = TaskMode.AGENT
+    # CLI engine (agy/Claude Code) — docs/design/dot-2-cli-engine.md muc 4.
+    engine: Optional[EngineKind] = EngineKind.PLAN_ACT
+    conversation_ref: Optional[str] = None
+    engine_last_seq: int = 0
     class Settings:
         name = "sessions"
         indexes = [

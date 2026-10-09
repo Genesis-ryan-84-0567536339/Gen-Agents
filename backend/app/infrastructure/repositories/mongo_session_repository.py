@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime, UTC
-from app.domain.models.session import Session, SessionStatus, SessionSummary, TaskMode
+from app.domain.models.session import EngineKind, Session, SessionStatus, SessionSummary, TaskMode
 from app.domain.models.file import FileInfo
 from app.domain.repositories.session_repository import SessionRepository
 from app.domain.models.event import BaseEvent
@@ -26,6 +26,7 @@ SESSION_LIST_PROJECTION = {
     "is_pinned": 1,
     "project_id": 1,
     "task_mode": 1,
+    "engine": 1,
 }
 
 class MongoSessionRepository(SessionRepository):
@@ -69,6 +70,7 @@ class MongoSessionRepository(SessionRepository):
             is_pinned=doc.get("is_pinned", False),
             project_id=doc.get("project_id"),
             task_mode=doc.get("task_mode") or TaskMode.AGENT,
+            engine=doc.get("engine") or EngineKind.PLAN_ACT,
         )
 
     async def find_by_id(self, session_id: str) -> Optional[Session]:
@@ -310,3 +312,34 @@ class MongoSessionRepository(SessionRepository):
         if not result:
             raise ValueError(f"Session {session_id} not found")
         await self._notify_upsert(session_id)
+
+    async def update_engine(self, session_id: str, engine: str) -> None:
+        """Update which engine runs this session (plan_act | agy | claude_code)"""
+        result = await SessionDocument.find_one(
+            SessionDocument.session_id == session_id
+        ).update(
+            {"$set": {"engine": engine, "updated_at": datetime.now(UTC)}}
+        )
+        if not result:
+            raise ValueError(f"Session {session_id} not found")
+        await self._notify_upsert(session_id)
+
+    async def update_conversation_ref(self, session_id: str, conversation_ref: Optional[str]) -> None:
+        """Update the CLI engine's own conversation id (for --conversation/--resume)"""
+        result = await SessionDocument.find_one(
+            SessionDocument.session_id == session_id
+        ).update(
+            {"$set": {"conversation_ref": conversation_ref, "updated_at": datetime.now(UTC)}}
+        )
+        if not result:
+            raise ValueError(f"Session {session_id} not found")
+
+    async def update_engine_cursor(self, session_id: str, seq: int) -> None:
+        """Update the replay cursor (engine_last_seq) for /engine/events"""
+        result = await SessionDocument.find_one(
+            SessionDocument.session_id == session_id
+        ).update(
+            {"$set": {"engine_last_seq": seq, "updated_at": datetime.now(UTC)}}
+        )
+        if not result:
+            raise ValueError(f"Session {session_id} not found")

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from app.interfaces.schemas.event import AgentStreamEvent
-from app.domain.models.session import SessionStatus, SessionSummary, TaskMode
+from app.domain.models.session import EngineKind, SessionStatus, SessionSummary, TaskMode
 
 
 class ShellViewRequest(BaseModel):
@@ -25,6 +25,7 @@ class GetSessionResponse(BaseModel):
     is_pinned: bool = False
     project_id: Optional[str] = None
     task_mode: TaskMode = TaskMode.AGENT
+    engine: EngineKind = EngineKind.PLAN_ACT
 
 
 class ListSessionItem(BaseModel):
@@ -40,6 +41,7 @@ class ListSessionItem(BaseModel):
     is_pinned: bool = False
     project_id: Optional[str] = None
     task_mode: TaskMode = TaskMode.AGENT
+    engine: EngineKind = EngineKind.PLAN_ACT
 
     @staticmethod
     def from_domain(summary: SessionSummary) -> 'ListSessionItem':
@@ -55,6 +57,7 @@ class ListSessionItem(BaseModel):
             is_pinned=summary.is_pinned,
             project_id=summary.project_id,
             task_mode=summary.task_mode or TaskMode.AGENT,
+            engine=summary.engine or EngineKind.PLAN_ACT,
         )
 
 
@@ -129,6 +132,18 @@ class UpdateSessionTaskModeRequest(BaseModel):
 class UpdateSessionTaskModeResponse(BaseModel):
     session_id: str
     task_mode: TaskMode
+
+
+class UpdateSessionEngineRequest(BaseModel):
+    """Doi dong co chay phien (plan_act | agy | claude_code). Frontend KHONG
+    goi API nay — doi bang curl truc tiep (docs/design/dot-2-cli-engine.md
+    muc 4, 00-tong-quan.md §8)."""
+    engine: EngineKind
+
+
+class UpdateSessionEngineResponse(BaseModel):
+    session_id: str
+    engine: EngineKind
 
 
 class LibraryFileItem(BaseModel):

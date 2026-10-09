@@ -95,7 +95,19 @@ class SessionRepository(Protocol):
     async def update_task_mode(self, session_id: str, task_mode: str) -> None:
         """Update session task mode (agent | chat)"""
         ...
-    
+
+    async def update_engine(self, session_id: str, engine: str) -> None:
+        """Update which engine runs this session (plan_act | agy | claude_code)"""
+        ...
+
+    async def update_conversation_ref(self, session_id: str, conversation_ref: Optional[str]) -> None:
+        """Update the CLI engine's own conversation id (for --conversation/--resume)"""
+        ...
+
+    async def update_engine_cursor(self, session_id: str, seq: int) -> None:
+        """Update the replay cursor (engine_last_seq) for /engine/events"""
+        ...
+
     async def delete(self, session_id: str) -> None:
         """Delete a session"""
         ...

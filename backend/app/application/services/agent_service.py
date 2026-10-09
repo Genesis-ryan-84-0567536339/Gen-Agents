@@ -1,7 +1,7 @@
 from typing import AsyncGenerator, Optional, List
 import logging
 from datetime import datetime
-from app.domain.models.session import Session, SessionSummary
+from app.domain.models.session import EngineKind, Session, SessionSummary
 from app.domain.repositories.session_repository import SessionRepository
 from app.domain.repositories.file_favorite_repository import FileFavoriteRepository
 from app.application.errors.exceptions import NotFoundError
@@ -61,7 +61,12 @@ class AgentService:
     async def create_session(self, user_id: str) -> Session:
         logger.info(f"Creating new session for user: {user_id}")
         agent = await self._create_agent()
-        session = Session(agent_id=agent.id, user_id=user_id)
+        settings = get_settings()
+        session = Session(
+            agent_id=agent.id,
+            user_id=user_id,
+            engine=EngineKind(settings.gen_engine_default),
+        )
         logger.info(f"Created new Session with ID: {session.id} for user: {user_id}")
         await self._session_repository.save(session)
         return session
@@ -192,6 +197,20 @@ class AgentService:
         if not session:
             raise RuntimeError("Session not found")
         await self._session_repository.update_task_mode(session_id, task_mode)
+
+    async def update_session_engine(
+        self,
+        session_id: str,
+        user_id: str,
+        engine: str,
+    ) -> None:
+        """Doi dong co chay phien (plan_act | agy | claude_code) — doi bang
+        curl truc tiep, frontend KHONG sua (docs/design/dot-2-cli-engine.md
+        muc 4, 00-tong-quan.md §8)."""
+        session = await self._session_repository.find_by_id_and_user_id(session_id, user_id)
+        if not session:
+            raise RuntimeError("Session not found")
+        await self._session_repository.update_engine(session_id, engine)
 
     async def update_library_file_favorite(
         self,
