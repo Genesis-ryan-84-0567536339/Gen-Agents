@@ -18,11 +18,16 @@ env:
 
 jobs:
   build-and-push:
+    # Gen-Agents (fork): chỉ chạy khi repo đã cấu hình secret registry
+    # (DOCKERHUB_USERNAME/DOCKERHUB_TOKEN). Fork chưa có secret này nên job
+    # tự bỏ qua — tránh build/push image vô nghĩa lên registry của upstream.
+    # Không đổi hành vi của tests.yml.
+    if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         component: [frontend, backend, sandbox]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
