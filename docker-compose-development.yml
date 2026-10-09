@@ -87,6 +87,9 @@ services:
       - UVI_ARGS="--reload"
       - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
       - GEN_AGENTS_MCP_BIND=0.0.0.0
+      # Chi dev/CI: cho /engine/start chay them fake_agy.py (sandbox/tests/)
+      # de test tang sandbox + e2e khong can agy that/dang nhap (Issue #30).
+      - ENGINE_ALLOWED_BINARIES=agy,claude,fake_agy.py
     restart: unless-stopped
     networks:
       - manus-network
