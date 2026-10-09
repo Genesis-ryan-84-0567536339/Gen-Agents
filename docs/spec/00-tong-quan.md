@@ -251,10 +251,7 @@ khác (Microsoft, GitHub) nếu cần.
 **11.4 Đo dùng theo tenant.** Đếm số nhiệm vụ, số phút sandbox (từ lúc
 container `running` tới lúc huỷ — đã có sẵn trong vòng đời
 `docker_sandbox.py`), và token dùng (cả agy và Claude Code đều emit `usage`
-theo lượt trong stream-json — đã đo thật, xem `01-dong-co-cli.md` mục 3–4). **v0.1**:
-chỉ *ghi lại* 3 số này theo `tenant_id` vào Mongo (collection mới, không tính
-tiền, không chặn gì) + một hạn mức mềm (soft limit) cảnh báo log khi vượt,
-không chặn chạy. **Sau**: tính tiền thật, hạn mức cứng, dashboard cho khách.
+theo lượt trong stream-json — đã đo thật, xem `01-dong-co-cli.md` mục 3–4). **v0.1**: chỉ đo dùng theo tenant (ghi `TenantUsageEvent`), không tính tiền, **không hạn mức** (QD-19). **Sau**: tính tiền thật, hạn mức, dashboard cho khách.
 
 **11.5 Hạ tầng v0.1: một máy Fedora + Cloudflare tunnel.** Giống hạ tầng
 Gen-hub hiện có của Boss (`hub.genos.top`, Docker, Cloudflare tunnel) — tái

@@ -277,10 +277,8 @@ Model mới `TenantUsageEvent`: `tenant_id`, `session_id`, `kind`
   trả `result.usage.{input_tokens,output_tokens,…}`, Claude Code v2.1.295 trả
   `usage` trên dòng `result`. Cả hai đều có, không cần đường dự phòng.
 
-**v0.1**: chỉ ghi `TenantUsageEvent`, không tính tiền. Một hạn mức mềm (ví
-dụ số nhiệm vụ/ngày) chỉ log cảnh báo khi vượt, không chặn chạy nhiệm vụ.
-**Sau**: tính tiền thật, hạn mức cứng (chặn tạo session mới khi vượt),
-dashboard cho tenant tự xem usage của họ.
+**v0.1**: chỉ ghi `TenantUsageEvent`, không tính tiền, **không có hạn mức** (Boss chốt 09/10/2026, QD-19).
+**Sau**: tính tiền thật, hạn mức (mềm rồi cứng), dashboard cho khách.
 
 ### 9.5 Cách ly sandbox giữa tenant
 
@@ -323,6 +321,4 @@ SDK" ngay từ v0.1 (mục 11.6) — tách sau không phải viết lại busine
 4. Plan UI hiện tại của ai-manus có nên cố ánh xạ từ sự tự hành của CLI
    (suy ra `PlanEvent` từ cách CLI tự chia việc) hay CliEngineFlow chấp nhận
    Plan UI trống/ẩn cho engine này ở v0.1?
-5. `Tenant.plan`/hạn mức mềm cụ thể là số gì (nhiệm vụ/ngày? phút sandbox/
-   tháng?) — cần Boss chọn số thật trước khi code mục 9.4, v0.1 có thể để
-   một hằng số cấu hình duy nhất áp cho mọi tenant (chưa cần gói nhiều mức).
+5. ~~`Tenant.plan`/hạn mức mềm là số gì?~~ **Đã chốt (Boss 09/10, QD-19): bỏ hạn mức khỏi v0.1; chỉ đo dùng.**
