@@ -1,0 +1,30 @@
+--- browser_navigate {'url': "data:text/html,<input id='name' /><select id='color'><option>red</option><option>green</option><option>blue</option></select>"} ---
+{
+  "success": true,
+  "message": "Da dieu huong toi data:text/html,<input id='name' /><select id='color'><option>red</option><option>green</option><option>blue</option></select>",
+  "data": {
+    "url": "data:text/html,<input id='name' /><select id='color'><option>red</option><option>green</option>
+--- browser_input {'text': 'xin chao', 'press_enter': False, 'selector': '#name'} ---
+{
+  "success": true,
+  "message": "Da nhap text",
+  "data": {
+    "url": "data:text/html,<input id='name' /><select id='color'><option>red</option><option>green</option><option>blue</option></select>",
+    "title": "",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAOTUlEQVR4nOzdWY
+--- browser_select_option {'selector': '#color', 'option': 2} ---
+{
+  "success": true,
+  "message": "Da chon option 2",
+  "data": {
+    "url": "data:text/html,<input id='name' /><select id='color'><option>red</option><option>green</option><option>blue</option></select>",
+    "title": "",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAOaUlEQVR4nO
+--- browser_console_exec {'javascript': "document.getElementById('name').value + '|' + document.getElementById('color').value"} ---
+{
+  "success": true,
+  "message": "Da chay javascript",
+  "data": {
+    "result": "xin chao|blue"
+  }
+}

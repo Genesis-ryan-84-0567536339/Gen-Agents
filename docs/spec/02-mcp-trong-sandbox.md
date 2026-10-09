@@ -223,3 +223,51 @@ chỉ có 3 tool nên chỗ có thể lệch thứ tự rất nhỏ.
    `tool_info.parameters` (ACTIVE) và `tool_info.output` (DONE); Claude Code
    v2.1.295 in `assistant.content[].tool_use` + `user.tool_result`. Đủ cho (B)
    với cả hai — xem `01-dong-co-cli.md` mục 3–4.
+
+## Lệch so với spec và lý do (thi công đợt 1, Issue #29)
+
+Ghi lại đúng chỗ thực tế thi công buộc khác với mô tả ở các mục trên, theo
+yêu cầu mục cuối Issue #29. Không có mục nào đổi *ý định* của spec, chỉ đổi
+chi tiết triển khai.
+
+1. **Tham số `browser_click` / `browser_input` / `browser_select_option`
+   thay `index` bằng `selector`/`text`.** Hệ quả trực tiếp của quyết định đã
+   chốt ở "Câu hỏi mở" #1 (không tái tạo cây `[index]`) — ghi lại ở đây vì
+   bảng tham số gốc mục 3.3 vẫn còn liệt kê `index` cho 3 tool này.
+   `browser_click(selector?, text?, coordinate_x?, coordinate_y?)`,
+   `browser_input(text, press_enter, selector?, coordinate_x?, coordinate_y?)`,
+   `browser_select_option(selector, option)`. Xem `sandbox/mcp/browser_tools.py`.
+2. **`browser_restart` không khởi động lại tiến trình Chrome** — Chrome do
+   supervisord quản lý chung cho noVNC, huỷ tiến trình sẽ ảnh hưởng phiên
+   VNC đang xem. Thay vào đó mở một tab mới (xoá buffer console, đổi trang
+   đang theo dõi) rồi điều hướng tới URL — đủ ngữ nghĩa "reset trạng thái
+   trang" mà tool này cần, không phá hạ tầng chung.
+3. **`plan_update`/`message_ask_user`/`message_notify_user` ghi NDJSON cục
+   bộ (`~/.gen-agents/events.ndjson`) ở đợt 1, chưa dùng Redis stream như
+   phương án (A) mục 7.** Lý do: CliEngineFlow (đợt 2) — bên duy nhất cần
+   đọc sự kiện này — chưa tồn tại; thêm Redis client vào sandbox ngay bây
+   giờ là build cho một người đọc chưa có. Đợt 2 đổi nguồn ghi (hoặc thêm
+   XADD song song) khi CliEngineFlow sẵn sàng subscribe theo `session_id`.
+4. **Program `mcp` trong supervisord chạy bằng
+   `/app/.venv/bin/python mcp/server.py` thay vì `uv run ...`.** Tool API
+   (`program:app`) dùng `uv run uvicorn ...`; MCP server gọi trực tiếp
+   Python của venv đã có sẵn (do `uv sync` dựng ở bước build image) để
+   tránh `uv` phải resolve lại project mỗi lần start với `directory` khác
+   — và quan trọng hơn: giữ đúng quy ước sys.path ở mục "Bảo mật" (chạy
+   bằng đường dẫn script tương đối `mcp/server.py` từ `directory=/app` để
+   `sys.path[0]` là `/app/mcp`, không phải `/app` — tránh thư mục `mcp/` này
+   che khuất gói pip `mcp`, xem `sandbox/mcp/config.py`).
+5. **Bỏ gói `sudo` khỏi image, không chỉ bỏ NOPASSWD.** Luật cứng mục 6 của
+   `00-tong-quan.md` chỉ nói "bỏ sudo NOPASSWD"; đợt 1 đi xa hơn một chút —
+   không cài gói `sudo` cho image nữa (không chỉ bỏ quyền). Hệ quả: tham số
+   `sudo=true` của `file_read`/`file_write` (`FileToolkit`, kế thừa từ
+   `backend/app/domain/services/tools/file.py`) sẽ thất bại với lỗi
+   "command not found" thay vì chạy được — chấp nhận được vì luật cứng đã
+   chủ ý loại bỏ đường leo thang quyền này; CLI/agent không nên trông cậy
+   `sudo=true` trong sandbox v0.1.
+6. **User `browser` chạy Chrome (khác `ubuntu`) — đã kiểm chạy thật trong
+   container, xem bằng chứng (c) trong PR**: `supervisorctl status` các
+   program `chrome`/`x11vnc`/`socat` đều RUNNING, và `browser_navigate` qua
+   MCP vẫn điều khiển được đúng Chrome đó (CDP không cần xác thực vì Xvfb
+   không chạy `-auth`). Nếu bằng chứng cho thấy ngược lại, mục này sẽ được
+   sửa lại và ghi rõ lý do giữ nguyên `chrome` chạy root như trước.
