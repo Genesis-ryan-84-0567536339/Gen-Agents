@@ -1,107 +1,114 @@
-# CLAUDE.md
+# CLAUDE.md — Gen-Agents
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Dự án **Gen-Agents**: harness tự host cho Boss, giao nhiệm vụ cho một agent
+CLI (agy / Claude Code CLI) chạy thật trong container Ubuntu + Chrome thật,
+xem live qua noVNC, não cắm/rút được không đổi cách dùng sản phẩm.
 
-> A more detailed companion guide lives in [AGENTS.md](AGENTS.md) (env var tables, per-change testing matrix, Cursor Cloud notes). The Cursor starter skill at `.cursor/skills/starter.md` has the full API reference. Read those when you need depth; this file is the orientation.
+Fork từ `Simpleyyt/ai-manus` (MIT), remote `upstream` giữ nguyên để kéo vá.
+Dự án riêng, **không đụng Gen-Harness** (hệ thống khác của Boss) — hai hệ
+thống độc lập, dù dùng chung quy ước Issue → PR → review.
 
-## What this is
+Đặc tả đầy đủ nằm ở `docs/spec/`:
+- `00-tong-quan.md` — mục tiêu, DoD, kiến trúc 3 lớp, luật cứng, thuật ngữ,
+  hướng SaaS.
+- `01-dong-co-cli.md` — bộ chuyển động cơ CLI (lệnh, NDJSON đã đo của agy và
+  Claude Code, bảng dịch sang `AgentEvent`, vòng đời nhiệm vụ).
+- `02-mcp-trong-sandbox.md` — MCP server trong container nhiệm vụ.
+- `03-cau-hinh-thuoc-harness.md` — Skill/Instruction/MCP/phiên đăng nhập CLI/
+  lịch sử thuộc harness, đa khách thuê.
 
-AI Manus is a general-purpose AI Agent system. A user message drives a **Plan-Act agent loop** in the backend (Planner + per-step Executor), which runs tools (shell, browser, file, search, MCP) inside a **per-session Docker sandbox** and streams every event back to the browser over **WebSocket**. The repo is a monorepo of four cooperating services:
+Đọc đúng file liên quan trước khi sửa phần đó — đừng suy diễn lại từ code khi
+spec đã có câu trả lời, và cập nhật spec khi quyết định đổi.
 
-| Service | Stack | Dev Port | Entry Point |
-|---|---|---|---|
-| `frontend` | Vue 3 + TS, Vite, Tailwind, reka-ui | 5173 | `frontend/src/main.ts` |
-| `backend` | Python 3.12, FastAPI, LangChain, Beanie/Motor | 8000 (debugpy 5678) | `backend/app/main.py` |
-| `sandbox` | Python 3.10, FastAPI + Xvfb/Chrome/VNC under supervisord | 8080 API, 5900 VNC, 9222 CDP | `sandbox/app/main.py` |
-| `mockserver` | Python, FastAPI (canned LLM responses) | 8090 | `mockserver/main.py` |
+## Vai trò
 
-Backing services: MongoDB 7.0 (sessions, agents, users) and Redis 7.0 (cache + message queues). The backend talks to `/var/run/docker.sock` to spawn sandbox containers.
+- **Boss (Ryan)** — Owner, quyết định cuối, không rành code.
+- **Claude Code** — điều phối: đọc Issue, viết spec/review, quyết định kiến
+  trúc, tự làm bản sửa nhỏ nhưng khó (≲ 30 dòng, cần hiểu sâu).
+- **Sub agent Sonnet** (mặc định) — thi công: đọc/sửa code theo spec đã có,
+  chạy test, thao tác PR theo mẫu.
+- **Sub agent Opus** — review trước merge, gỡ xung đột, viết spec, gỡ lỗi khó.
+- **Sub agent Haiku** — việc rất đơn giản (đọc/liệt kê, đổi tên, định dạng).
+- **agy qua gen-workplace** — khi cần chạy việc nhiều code thật trên máy
+  Boss, ngoài worktree Claude Code đang giữ.
 
-## Commands
+## Quy trình
 
-Everything runs through Docker Compose wrappers. `./dev.sh` = `docker compose -f docker-compose-development.yml`; `./run.sh` = production compose; `./build.sh` = `docker buildx bake`.
+Issue → nhánh → PR → tự kiểm + bằng chứng chạy thật → merge (`Refs #n`).
+
+- Issue là bước mặc định, không phải việc cần xin phép — tạo Issue trước khi
+  code một thay đổi có ý nghĩa.
+- Nhánh đặt tên theo chủ đề (ví dụ `spec/gen-agents-v0`, `feat/mcp-sandbox`).
+- PR phải có **bằng chứng chạy thật** theo đúng đường người dùng đi (ví dụ
+  CLI → MCP sandbox → tool thật), không chỉ test mock — đặc biệt với mọi đổi
+  ở `domain/services/flows/`, `domain/services/tools/`, `sandbox/`.
+- Tự kiểm (test pass + bằng chứng ghi trong PR + không xung đột) là đủ để tự
+  merge, không chờ duyệt tay riêng — trừ khi việc đó đụng luật cứng dưới đây,
+  khi đó hỏi Boss trước.
+
+## Luật cứng (xem chi tiết + lý do ở `docs/spec/00-tong-quan.md` mục 7)
+
+1. Không lách chống bot/CAPTCHA.
+2. Không proxy token OAuth của Antigravity — mỗi vai/mỗi tenant tự đăng nhập
+   tài khoản CLI của chính họ.
+3. Không gộp quota nhiều tài khoản vào một luồng.
+4. Mỗi vai một tài khoản.
+5. Harness là nguồn gốc duy nhất cho skill/instruction/cấu hình MCP/phiên
+   đăng nhập CLI/lịch sử — container sandbox không bao giờ là nơi lưu lâu dài.
+
+## Kéo vá từ upstream
 
 ```bash
-cp .env.example .env          # then set API_KEY to any non-empty string
-./dev.sh up -d                # full hot-reload dev stack
-./dev.sh logs -f backend      # tail a service
-./dev.sh down -v              # stop + wipe volumes (rebuild after dependency changes)
-./dev.sh build                # rebuild images after backend/pyproject.toml or frontend/package.json change
+git fetch upstream
+git log upstream/main --oneline -20      # xem có gì mới
+git merge --no-ff upstream/main          # hoặc cherry-pick chọn lọc commit cụ thể
 ```
 
-> In dev mode only **one** global sandbox container is started (set via `SANDBOX_ADDRESS=sandbox`).
+Merge chọn lọc khi upstream đổi nhiều — ưu tiên cherry-pick phần vá lỗi/bảo
+mật, cân nhắc kỹ phần đổi kiến trúc vì Gen-Agents đã rẽ nhánh ở tầng flow
+(`domain/services/flows/`) và tool MCP trong sandbox.
 
-### Testing
+## Ngôn ngữ
 
-Backend and sandbox tests are **integration-style**: they hit a *running* server, so bring the stack up first.
+Tài liệu, Issue, PR, commit message: **tiếng Việt có dấu**. Code/định danh kỹ
+thuật giữ tiếng Anh như chuẩn ngôn ngữ lập trình.
+
+---
+
+## Ghi chú kỹ thuật kế thừa từ upstream (ai-manus)
+
+> Phần dưới giữ lại từ `CLAUDE.md` gốc của upstream — vẫn đúng với cấu trúc
+> mã nguồn hiện tại, dùng khi cần lệnh dev/test hoặc hiểu kiến trúc
+> PlanActFlow (engine "API thô" dự phòng, xem `00-tong-quan.md` mục 5).
+
+AI Manus là hệ Agent AI đa dụng. Một message của người dùng chạy qua
+**Plan-Act agent loop** ở backend (Planner + Executor theo từng step), chạy
+tool (shell, browser, file, search, MCP) trong **sandbox Docker riêng mỗi
+phiên**, phát mọi event về browser qua **WebSocket**. Monorepo 4 service:
+`frontend` (Vue 3 + TS, :5173), `backend` (Python 3.12 FastAPI, :8000),
+`sandbox` (Python 3.10 FastAPI + Xvfb/Chrome/VNC qua supervisord, :8080 API/
+:5900 VNC/:9222 CDP), `mockserver` (:8090). Backing: MongoDB 7.0 + Redis 7.0.
 
 ```bash
-# Backend (tests in backend/tests/ hit http://localhost:8000)
-./dev.sh up -d mongodb redis backend
-cd backend && uv run pytest                            # all
-cd backend && uv run pytest tests/test_auth_routes.py  # single file
-cd backend && uv run pytest -m file_api                # by marker (see backend/pytest.ini)
-cd backend && uv run pytest -m e2e                     # agent-loop e2e over the dev stack (self-skips when down)
-cd backend && uv run python -m evals.run               # offline harness behavior evals
-
-# Sandbox
-./dev.sh up -d sandbox
-cd sandbox && uv run pytest
-
-# Frontend — Vitest unit tests + type-check + lint + build
+cp .env.example .env && ./dev.sh up -d      # dev stack đầy đủ
+cd backend && uv run pytest -m "not e2e"     # test backend offline (không cần stack)
+cd backend && uv run pytest -m e2e -rs       # test e2e (cần dev stack chạy)
+cd sandbox && uv run pytest                   # test sandbox
 cd frontend && npm run test && npm run type-check && npm run lint && npm run build
-cd frontend && npm run test:e2e # Playwright browser e2e against the dev stack (localhost:5173)
 ```
 
-### Running a service outside Docker
+Backend theo DDD: `interfaces/` → `application/` → `domain/` ← `infrastructure/`.
+Agent loop chính: `domain/services/flows/plan_act.py` (`PlanActFlow`), agent ở
+`domain/services/agents/` (`PlannerAgent`, `ExecutionAgent`, cả hai kế thừa
+`BaseAgent`), event ở `domain/models/event.py`, tool ở
+`domain/services/tools/{shell,browser,file,search,message,mcp,plan,skill}.py`.
+Không có linter/formatter cho backend/sandbox; frontend có ESLint, không có
+Prettier. CI (`.github/workflows/tests.yml`, chạy trên PR vào `main`/`develop`)
+có: test offline backend + `evals.run`, test/type-check/lint/build frontend,
+quét secret (gitleaks), kiểm doc embed không lệch, và E2E dựng cả dev stack
+(`docker-compose-development.yml`) rồi chạy `pytest -m e2e`; `nightly.yml` chạy
+lại bộ đó mỗi đêm và tự mở Issue khi hỏng. CI **không** chạy test của
+`sandbox/` — phần đó phải tự kiểm cục bộ.
 
-```bash
-cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000   # needs MongoDB+Redis+API_KEY
-cd frontend && npm install && BACKEND_URL=http://localhost:8000 npm run dev  # BACKEND_URL enables the /api proxy
-```
-
-## Backend architecture (the part worth understanding)
-
-The backend follows **Domain-Driven Design** with strict layer dependencies pointing inward: `interfaces/` → `application/` → `domain/` ← `infrastructure/`.
-
-- **`domain/`** — pure business logic, no framework/IO. The `domain/external/` files are **Protocol interfaces** (`Sandbox`, `Browser`, `LLM`, `SearchEngine`, `FileStorage`, `Task`, `Cache`, `MessageQueue`); concrete implementations live in `infrastructure/external/`. When adding a capability, define the Protocol in `domain/external/` first, implement it in `infrastructure/`, and wire it in `interfaces/dependencies.py`.
-- **`application/services/`** — orchestrators (`agent_service`, `auth_service`, `file_service`, `token_service`, `email_service`) that the API layer calls.
-- **`infrastructure/`** — Beanie ODM documents (`infrastructure/models/documents.py`), Mongo/Redis repositories, and the concrete externals (e.g. `external/sandbox/docker_sandbox.py`, `external/browser`, `external/search`).
-- **`interfaces/`** — FastAPI routers (`api/*_routes.py`), Pydantic request/response schemas, error handlers, and `dependencies.py` (the manual DI container — this is where everything is composed).
-
-### The agent loop
-
-This is the heart of the system; understanding it requires reading several files together:
-
-1. **`domain/services/flows/plan_act.py`** — `PlanActFlow.run()` state machine: `IDLE → PLANNING → EXECUTING → UPDATING → (repeat) → SUMMARIZING → COMPLETED`. Planner creates/updates the plan; Executor runs **one step at a time** then `complete_step`. (`agent_loop.py` remains as the experimental single-loop alternative, not wired by default.)
-2. **`domain/services/agents/`** — `PlannerAgent` (`planner.py`) creates/updates plans; `ExecutionAgent` (`execution.py`) runs each step. Both extend `BaseAgent` (`base.py`), which wraps LangChain's `init_chat_model`, handles tool-call parsing with retry/repair (`domain/utils/robust_json_parser.py`), memory compaction, and iteration limits.
-3. **`domain/services/agent_task_runner.py`** — `AgentTaskRunner` runs the flow as a cancellable background `Task`, so sessions can be stopped/resumed. `AgentDomainService` (`agent_domain_service.py`) coordinates: it lazily creates a sandbox per session (`session.sandbox_id`) and manages task lifecycle.
-4. **Events & streaming** — every step yields typed events (`domain/models/event.py`: `PlanEvent`, `StepEvent`, `MessageEvent`, `ToolEvent`, `TitleEvent`, `DoneEvent`, `WaitEvent`, …). These flow through Redis message queues out to the frontend over **WebSocket** (`/api/v1/ws/chat` with `join_session` / `leave_session`; session list via `/api/v1/ws/sessions`; VNC takeover via `/api/v1/ws/vnc/{session_id}`). Tool output content types (`FileToolContent`, `ShellToolContent`, `BrowserToolContent`, …) let the UI render rich tool views.
-
-Session state lives in MongoDB; `SessionStatus` (`PENDING`/`RUNNING`/`WAITING`/etc.) is what lets the flow resume or roll back a message on reconnect.
-
-### Tools
-
-Each toolkit in `domain/services/tools/` (shell, browser, file, search, message, mcp) extends `BaseToolkit` and exposes methods decorated as `Tool`s. Shell/file tools call the **sandbox** API; browser tools drive the sandbox's headless Chrome (viewable via VNC→websockify→NoVNC); `mcp.py` loads external MCP servers from a mounted `mcp.json` (see `mcp.json.example`). Plan progress for the UI comes from Flow/`ExecutionAgent` `StepEvent`s and Planner `PlanEvent`s (not from parsing `todo.md`).
-
-## Sandbox
-
-- **Sandbox** (`sandbox/app/`) is a thin FastAPI service (`api/v1/{shell,file,supervisor}.py`) running inside an Ubuntu container managed by supervisord (Chrome, Xvfb, x11vnc, websockify, the API). One sandbox is spawned per session in production.
-
-## Frontend notes
-
-- Vue 3 Composition API, `<script setup lang="ts">` throughout; path alias `@/` → `src/`.
-- API layer in `src/api/` (axios + WebSocket clients for session list / chat); pages in `src/pages/`; reusable logic in `src/composables/`; rich tool renderers in `src/components/toolViews/`.
-- i18n via vue-i18n (Chinese + English) in `src/locales/`. Add keys to both locales.
-
-## Conventions & gotchas
-
-- **Backend/sandbox have no linter/formatter** (no Ruff/Black). The frontend has **ESLint** (`cd frontend && npm run lint`, flat config in `frontend/eslint.config.js`); no Prettier. Match the style of surrounding code.
-- Backend is **async-first** — route handlers and service methods are `async def`.
-- Python deps: **uv** + `pyproject.toml` (PEP 621) per service. Frontend: **npm** + `package.json`.
-- Config is centralized in `backend/app/core/config.py` (Pydantic `Settings`, `@lru_cache`d `get_settings()`); env vars come from `.env`. For dev, point `API_BASE` at `http://mockserver:8090/v1` and set `AUTH_PROVIDER=none` to skip both real LLM and login.
-- CI (`.github/workflows/docker-build-and-push.yml`) only builds/pushes multi-arch Docker images — it runs **no tests or lint**. Verify changes locally.
-- Docs site is Docsify under `docs/`; `.cursor/skills/update-docs/update_doc.sh` syncs compose/env embeds and README demos (not `docs/demo.md` scenario pages). See `.cursor/skills/update-docs/SKILL.md`. Version releases: `.cursor/skills/release/SKILL.md`.
-- When changing the agent harness (`domain/services` flows/agents/prompts/tools), read `.cursor/skills/harness/SKILL.md` first: it lists the loop invariants, extension recipes, and the offline test harness (`backend/tests/harness.py` fakes + mockserver scenario table).
-- The AI coding loop (scope → implement → verify → guard → sync → ship) is defined in AGENTS.md, with three project subagents in `.cursor/agents/`: `test-pyramid` (runs all verification layers), `harness-reviewer` (read-only invariant review for `domain/services` diffs), and `ui-parity-auditor` (read-only Manus UI parity audit).
-- Autonomy gates: a `stop` hook (`.cursor/hooks/verify_on_stop.py`) blocks ending a turn while fast offline checks fail for touched areas, and CI (`.github/workflows/tests.yml`) runs offline tests + evals, frontend checks, and full e2e on every push/PR to main/develop.
+Chi tiết đầy đủ hơn (bảng biến môi trường, ma trận test theo loại đổi, ghi
+chú Cursor Cloud): `AGENTS.md`. API đầy đủ: `.cursor/skills/starter.md`.
