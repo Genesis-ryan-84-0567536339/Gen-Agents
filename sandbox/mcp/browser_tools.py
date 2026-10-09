@@ -13,17 +13,24 @@ browser_click / browser_input / browser_select_option LỆCH so với bảng
 tham số gốc ở mục 3.3 (tham số `index` được thay bằng `selector`/`text`) —
 ghi trong mục "Lệch so với spec" cuối file spec 02.
 
-Mỗi tool trả về dict dạng {success, message, data}. `data` của các tool làm
-đổi trạng thái trang (navigate/restart/click/input/scroll/select_option/
-press_key/move_mouse) gồm {url, title, screenshot} (screenshot: base64 PNG)
-để CLI có phản hồi hình ảnh ngay mà không phải gọi thêm browser_view.
+Ảnh chụp màn hình (review Opus PR #36, bằng chứng docs/evidence/dot-1/):
+KHÔNG trả base64 nhét trong text JSON nữa (CLI không "nhìn" được dạng text,
+mà vẫn tốn hàng chục nghìn token/lần). Mọi ảnh trả về đều là ImageContent
+thật (`mcp.server.fastmcp.Image`, mime image/jpeg), JPEG quality ~60, thu
+nhỏ chiều rộng về tối đa 1024px bằng Pillow nếu ảnh gốc lớn hơn. Mặc định
+CHỈ `browser_view` kèm ảnh; 10 tool làm đổi trạng thái trang khác
+(navigate/restart/click/input/move_mouse/press_key/select_option/
+scroll_up/scroll_down/console_exec) trả text ngắn (url, title, kích thước
+trang) và nhận thêm tham số tuỳ chọn `with_screenshot: bool = False` — CLI
+tự quyết định có cần ảnh hay không, tránh tốn token mặc định.
 """
 import asyncio
-import base64
+import io
 import logging
 from collections import deque
-from typing import Any, Optional
+from typing import Any, List, Optional, Union
 
+from mcp.server.fastmcp import Image as McpImage
 from playwright.async_api import Page, async_playwright
 
 from config import CDP_URL
@@ -31,6 +38,8 @@ from config import CDP_URL
 logger = logging.getLogger("gen_agents.mcp.browser")
 
 _CONSOLE_MAXLEN = 500
+_SCREENSHOT_MAX_WIDTH = 1024
+_SCREENSHOT_JPEG_QUALITY = 60
 
 
 class BrowserSession:
@@ -105,20 +114,6 @@ def _err(message: str) -> dict:
     return {"success": False, "message": message}
 
 
-async def _state_with_screenshot(page: Page) -> dict:
-    try:
-        screenshot_bytes = await page.screenshot(type="png")
-        screenshot_b64 = base64.b64encode(screenshot_bytes).decode("ascii")
-    except Exception as exc:  # pragma: no cover
-        logger.warning("chup screenshot loi: %s", exc)
-        screenshot_b64 = ""
-    return {
-        "url": page.url,
-        "title": await _safe_title(page),
-        "screenshot": screenshot_b64,
-    }
-
-
 async def _safe_title(page: Page) -> str:
     try:
         return await page.title()
@@ -126,50 +121,113 @@ async def _safe_title(page: Page) -> str:
         return ""
 
 
-async def _ok(page: Page, message: str) -> dict:
-    data = await _state_with_screenshot(page)
-    return {"success": True, "message": message, "data": data}
+async def _page_size(page: Page) -> dict:
+    """Kích thước viewport hiện tại (thay cho screenshot trong phản hồi mặc định)."""
+    try:
+        size = await page.evaluate("() => ({width: window.innerWidth, height: window.innerHeight})")
+        return {"width": size.get("width"), "height": size.get("height")}
+    except Exception:
+        return {"width": None, "height": None}
+
+
+async def _brief_state(page: Page) -> dict:
+    """Trạng thái NGẮN (không ảnh) — mặc định cho mọi tool đổi trạng thái trang."""
+    size = await _page_size(page)
+    return {
+        "url": page.url,
+        "title": await _safe_title(page),
+        "width": size["width"],
+        "height": size["height"],
+    }
+
+
+async def _screenshot_image(page: Page) -> Optional[McpImage]:
+    """Chụp màn hình JPEG quality ~60, thu nhỏ chiều rộng về tối đa 1024px.
+
+    Trả về None nếu chụp lỗi — gọi nơi dùng tự quyết định có báo lỗi hay
+    không (không làm hỏng cả tool call chỉ vì không chụp được ảnh).
+    """
+    try:
+        raw = await page.screenshot(type="jpeg", quality=_SCREENSHOT_JPEG_QUALITY)
+    except Exception as exc:
+        logger.warning("chup screenshot loi: %s", exc)
+        return None
+
+    try:
+        from PIL import Image as PILImage
+
+        with PILImage.open(io.BytesIO(raw)) as im:
+            if im.width > _SCREENSHOT_MAX_WIDTH:
+                ratio = _SCREENSHOT_MAX_WIDTH / im.width
+                new_size = (_SCREENSHOT_MAX_WIDTH, max(1, round(im.height * ratio)))
+                im = im.convert("RGB").resize(new_size, PILImage.LANCZOS)
+                buf = io.BytesIO()
+                im.save(buf, format="JPEG", quality=_SCREENSHOT_JPEG_QUALITY)
+                raw = buf.getvalue()
+    except Exception as exc:  # pragma: no cover - Pillow luon co trong deps, chi phong thu
+        logger.warning("resize screenshot loi, dung anh JPEG goc: %s", exc)
+
+    return McpImage(data=raw, format="jpeg")
+
+
+async def _finish(page: Page, payload: dict, with_screenshot: bool) -> Union[dict, List[Any]]:
+    """Gắn thêm ImageContent vào phản hồi NẾU with_screenshot=True và chụp được ảnh."""
+    if not with_screenshot:
+        return payload
+    img = await _screenshot_image(page)
+    if img is None:
+        return payload
+    return [payload, img]
+
+
+async def _ok(page: Page, message: str, with_screenshot: bool = False) -> Union[dict, List[Any]]:
+    data = await _brief_state(page)
+    payload = {"success": True, "message": message, "data": data}
+    return await _finish(page, payload, with_screenshot)
 
 
 # ---------------------------------------------------------------------------
 # 12 tool
 # ---------------------------------------------------------------------------
 
-async def browser_view() -> dict:
-    """Xem nội dung trang hiện tại: trả về url, title, screenshot (base64 PNG)."""
+async def browser_view() -> Union[dict, List[Any]]:
+    """Xem nội dung trang hiện tại: LUÔN kèm ảnh chụp màn hình (ImageContent JPEG) + url/title."""
     try:
         page = await _session.get_page()
-        return await _ok(page, "Da chup man hinh trang hien tai")
+        return await _ok(page, "Da chup man hinh trang hien tai", with_screenshot=True)
     except Exception as exc:
         return _err(f"Khong xem duoc trang: {exc}")
 
 
-async def browser_navigate(url: str) -> dict:
+async def browser_navigate(url: str, with_screenshot: bool = False) -> Union[dict, List[Any]]:
     """Điều hướng tới URL.
 
     Args:
         url: URL đầy đủ, có protocol (http/https).
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi điều hướng
+            (mặc định false — gọi browser_view riêng nếu cần xem, đỡ tốn token).
     """
     try:
         page = await _session.get_page()
         await page.goto(url, wait_until="load", timeout=30000)
-        return await _ok(page, f"Da dieu huong toi {url}")
+        return await _ok(page, f"Da dieu huong toi {url}", with_screenshot)
     except Exception as exc:
         return _err(f"Dieu huong loi: {exc}")
 
 
-async def browser_restart(url: str) -> dict:
+async def browser_restart(url: str, with_screenshot: bool = False) -> Union[dict, List[Any]]:
     """Mở một tab mới (thay cho tab cũ) và điều hướng tới URL.
 
     Xem BrowserSession.new_page: không huỷ tiến trình Chrome của sandbox.
 
     Args:
         url: URL đầy đủ để mở sau khi reset.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi mở lại (mặc định false).
     """
     try:
         page = await _session.new_page()
         await page.goto(url, wait_until="load", timeout=30000)
-        return await _ok(page, f"Da mo tab moi va dieu huong toi {url}")
+        return await _ok(page, f"Da mo tab moi va dieu huong toi {url}", with_screenshot)
     except Exception as exc:
         return _err(f"Restart loi: {exc}")
 
@@ -179,7 +237,8 @@ async def browser_click(
     text: Optional[str] = None,
     coordinate_x: Optional[float] = None,
     coordinate_y: Optional[float] = None,
-) -> dict:
+    with_screenshot: bool = False,
+) -> Union[dict, List[Any]]:
     """Click vào phần tử trên trang.
 
     Vì v0.1 không tái tạo cây `[index]`, truyền MỘT trong ba cách:
@@ -189,6 +248,7 @@ async def browser_click(
         text: (Tuỳ chọn) văn bản hiển thị của phần tử (khớp gần đúng, lấy phần tử đầu tiên).
         coordinate_x: (Tuỳ chọn) toạ độ X để click trực tiếp.
         coordinate_y: (Tuỳ chọn) toạ độ Y để click trực tiếp.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi click (mặc định false).
     """
     try:
         page = await _session.get_page()
@@ -200,7 +260,7 @@ async def browser_click(
             await page.mouse.click(coordinate_x, coordinate_y)
         else:
             return _err("Can truyen selector, text, hoac ca coordinate_x va coordinate_y")
-        return await _ok(page, "Da click")
+        return await _ok(page, "Da click", with_screenshot)
     except Exception as exc:
         return _err(f"Click loi: {exc}")
 
@@ -211,7 +271,8 @@ async def browser_input(
     selector: Optional[str] = None,
     coordinate_x: Optional[float] = None,
     coordinate_y: Optional[float] = None,
-) -> dict:
+    with_screenshot: bool = False,
+) -> Union[dict, List[Any]]:
     """Ghi đè nội dung văn bản vào phần tử có thể nhập trên trang.
 
     Args:
@@ -220,6 +281,7 @@ async def browser_input(
         selector: (Tuỳ chọn) CSS selector của ô nhập (ưu tiên nếu có).
         coordinate_x: (Tuỳ chọn) toạ độ X của ô nhập, dùng khi không có selector.
         coordinate_y: (Tuỳ chọn) toạ độ Y của ô nhập, dùng khi không có selector.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi nhập (mặc định false).
     """
     try:
         page = await _session.get_page()
@@ -233,41 +295,47 @@ async def browser_input(
             return _err("Can truyen selector hoac ca coordinate_x va coordinate_y")
         if press_enter:
             await page.keyboard.press("Enter")
-        return await _ok(page, "Da nhap text")
+        return await _ok(page, "Da nhap text", with_screenshot)
     except Exception as exc:
         return _err(f"Input loi: {exc}")
 
 
-async def browser_move_mouse(coordinate_x: float, coordinate_y: float) -> dict:
+async def browser_move_mouse(
+    coordinate_x: float, coordinate_y: float, with_screenshot: bool = False
+) -> Union[dict, List[Any]]:
     """Di chuyển con trỏ chuột tới vị trí chỉ định.
 
     Args:
         coordinate_x: Toạ độ X.
         coordinate_y: Toạ độ Y.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi di chuyển (mặc định false).
     """
     try:
         page = await _session.get_page()
         await page.mouse.move(coordinate_x, coordinate_y)
-        return await _ok(page, "Da di chuyen chuot")
+        return await _ok(page, "Da di chuyen chuot", with_screenshot)
     except Exception as exc:
         return _err(f"Move mouse loi: {exc}")
 
 
-async def browser_press_key(key: str) -> dict:
+async def browser_press_key(key: str, with_screenshot: bool = False) -> Union[dict, List[Any]]:
     """Giả lập nhấn phím trên trang hiện tại.
 
     Args:
         key: Tên phím (vd Enter, Tab, ArrowUp), hỗ trợ tổ hợp (vd Control+Enter).
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi nhấn phím (mặc định false).
     """
     try:
         page = await _session.get_page()
         await page.keyboard.press(key)
-        return await _ok(page, f"Da nhan phim {key}")
+        return await _ok(page, f"Da nhan phim {key}", with_screenshot)
     except Exception as exc:
         return _err(f"Press key loi: {exc}")
 
 
-async def browser_select_option(selector: str, option: int) -> dict:
+async def browser_select_option(
+    selector: str, option: int, with_screenshot: bool = False
+) -> Union[dict, List[Any]]:
     """Chọn option trong phần tử dropdown (<select>).
 
     LỆCH so với bảng tham số gốc: thay `index` (của cây [index]) bằng
@@ -277,20 +345,24 @@ async def browser_select_option(selector: str, option: int) -> dict:
     Args:
         selector: CSS selector của phần tử <select>.
         option: Số thứ tự option cần chọn, bắt đầu từ 0.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi chọn (mặc định false).
     """
     try:
         page = await _session.get_page()
         await page.locator(selector).select_option(index=option, timeout=10000)
-        return await _ok(page, f"Da chon option {option}")
+        return await _ok(page, f"Da chon option {option}", with_screenshot)
     except Exception as exc:
         return _err(f"Select option loi: {exc}")
 
 
-async def browser_scroll_up(to_top: Optional[bool] = None) -> dict:
+async def browser_scroll_up(
+    to_top: Optional[bool] = None, with_screenshot: bool = False
+) -> Union[dict, List[Any]]:
     """Cuộn trang lên.
 
     Args:
         to_top: (Tuỳ chọn) cuộn thẳng lên đầu trang thay vì 1 viewport.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi cuộn (mặc định false).
     """
     try:
         page = await _session.get_page()
@@ -298,16 +370,19 @@ async def browser_scroll_up(to_top: Optional[bool] = None) -> dict:
             await page.evaluate("window.scrollTo(0, 0)")
         else:
             await page.evaluate("window.scrollBy(0, -window.innerHeight)")
-        return await _ok(page, "Da cuon len")
+        return await _ok(page, "Da cuon len", with_screenshot)
     except Exception as exc:
         return _err(f"Scroll up loi: {exc}")
 
 
-async def browser_scroll_down(to_bottom: Optional[bool] = None) -> dict:
+async def browser_scroll_down(
+    to_bottom: Optional[bool] = None, with_screenshot: bool = False
+) -> Union[dict, List[Any]]:
     """Cuộn trang xuống.
 
     Args:
         to_bottom: (Tuỳ chọn) cuộn thẳng xuống cuối trang thay vì 1 viewport.
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi cuộn (mặc định false).
     """
     try:
         page = await _session.get_page()
@@ -315,16 +390,17 @@ async def browser_scroll_down(to_bottom: Optional[bool] = None) -> dict:
             await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         else:
             await page.evaluate("window.scrollBy(0, window.innerHeight)")
-        return await _ok(page, "Da cuon xuong")
+        return await _ok(page, "Da cuon xuong", with_screenshot)
     except Exception as exc:
         return _err(f"Scroll down loi: {exc}")
 
 
-async def browser_console_exec(javascript: str) -> dict:
+async def browser_console_exec(javascript: str, with_screenshot: bool = False) -> Union[dict, List[Any]]:
     """Chạy JavaScript trong console của trang hiện tại.
 
     Args:
         javascript: Mã JavaScript cần chạy (chạy trong ngữ cảnh console trang).
+        with_screenshot: (Tuỳ chọn) kèm ảnh chụp màn hình sau khi chạy (mặc định false).
     """
     try:
         page = await _session.get_page()
@@ -335,7 +411,8 @@ async def browser_console_exec(javascript: str) -> dict:
             json.dumps(result)
         except TypeError:
             result = str(result)
-        return {"success": True, "message": "Da chay javascript", "data": {"result": result}}
+        payload = {"success": True, "message": "Da chay javascript", "data": {"result": result}}
+        return await _finish(page, payload, with_screenshot)
     except Exception as exc:
         return _err(f"Console exec loi: {exc}")
 

@@ -84,8 +84,11 @@ RUN mkdir -p /etc/apt/keyrings && \
 # Configure npm to use Aliyun mirror
 
 # Cai Claude Code CLI (npm global) — dong co CLI lop 3 thu hai, xem
-# docs/spec/01-dong-co-cli.md muc 4
-RUN npm install -g @anthropic-ai/claude-code
+# docs/spec/01-dong-co-cli.md muc 4. Ghim version cu the (review Opus PR #36)
+# thay vi "latest" de build lap lai duoc — 2.1.295 la ban moi nhat tren npm
+# tai thoi diem viet (kiem bang `npm view @anthropic-ai/claude-code version`,
+# 09/10/2026). Nang version: doi so nay + ghi lai ngay kiem tra.
+RUN npm install -g @anthropic-ai/claude-code@2.1.295
 
 # Cai python-docx (xuat file .docx) — DoD dong 3 cua docs/spec/00-tong-quan.md
 # can cong cu xuat .docx; pandoc da cai o buoc "basic tools" phia tren

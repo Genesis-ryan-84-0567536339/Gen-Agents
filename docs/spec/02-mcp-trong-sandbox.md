@@ -248,6 +248,14 @@ chi tiết triển khai.
    đọc sự kiện này — chưa tồn tại; thêm Redis client vào sandbox ngay bây
    giờ là build cho một người đọc chưa có. Đợt 2 đổi nguồn ghi (hoặc thêm
    XADD song song) khi CliEngineFlow sẵn sàng subscribe theo `session_id`.
+   **Lưu ý riêng cho `message_ask_user` (review Opus PR #36):** ở đợt 1,
+   tool này CHỈ ghi NDJSON rồi trả ngay chuỗi xác nhận — KHÔNG thực sự dừng
+   CLI lại chờ người dùng trả lời (CLI vẫn chạy tiếp ngay sau khi gọi tool).
+   Hành vi "dừng chờ" thật (`WaitEvent`, phiên chuyển `WAITING`, CLI process
+   treo ở đó tới khi có câu trả lời bơm vào) là việc của `CliEngineFlow` ở
+   đợt 2 (xem `01-dong-co-cli.md` mục 2, dòng `ask_user{question}`), vì cơ
+   chế dừng/bơm lại thuộc tầng Flow (đọc NDJSON CLI, biết khi nào tạm dừng
+   gửi input), không phải việc của MCP server.
 4. **Program `mcp` trong supervisord chạy bằng
    `/app/.venv/bin/python mcp/server.py` thay vì `uv run ...`.** Tool API
    (`program:app`) dùng `uv run uvicorn ...`; MCP server gọi trực tiếp

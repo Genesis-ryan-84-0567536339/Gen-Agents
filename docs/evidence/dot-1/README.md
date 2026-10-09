@@ -88,3 +88,59 @@ Xem mục mới "Lệch so với spec và lý do (thi công đợt 1, Issue #29)
 click/input/select_option, browser_restart không kill Chrome, plan/message
 ghi NDJSON cục bộ thay Redis, cách chạy `program:mcp`, bỏ hẳn gói `sudo`,
 user `browser` cho Chrome).
+
+## Vòng sửa theo review Opus (comment 6077403049 trên PR #36)
+
+2 điểm chặn + 3 điểm "rẻ, làm luôn" — tất cả đã kiểm chạy thật trong
+container (không chỉ đọc code):
+
+- **Screenshot → ImageContent thật.** Trước: `browser_view` nhét base64 PNG
+  (~76KB, ~100k ký tự) vào field `screenshot` của text JSON — CLI không
+  "nhìn" được, chỉ tốn token. Sau: mọi tool trả `ImageContent` thật (mime
+  `image/jpeg`), JPEG quality 60, thu nhỏ chiều rộng về tối đa 1024px bằng
+  Pillow. `browser_view-imagecontent-example-com.jpg` là ảnh thật giải mã
+  từ kết quả — 1024×753, 37KB (so với PNG 76KB trước đó, dù chụp cùng
+  trang). CHỈ `browser_view` kèm ảnh mặc định; 10 tool đổi trạng thái khác
+  nhận thêm tham số `with_screenshot: bool = False` — mặc định KHÔNG kèm
+  ảnh (`data` chỉ còn `url/title/width/height`, bỏ hẳn field `screenshot`).
+  Có 1 lỗi phát sinh khi sửa: khai kiểu trả về `Union[dict, List[Any]]`
+  khiến FastMCP tự bật "structured output" rồi crash khi serialize object
+  `Image` (`PydanticSerializationError`) — sửa bằng cách khai
+  `structured_output=False` cho cả 25 tool khi đăng ký trong `server.py`
+  (không chỉ 12 tool browser, để tránh tái phạm lỗi này ở các tool khác).
+- **`shell_wait` timeout khi chờ ≥ 30s.** `REST_TIMEOUT=30` (chung cho mọi
+  tool) nhỏ hơn mặc định 60s mà tool API tự chờ — gọi `shell_wait(seconds=35)`
+  với lệnh `sleep 32` trước đây sẽ bị `httpx.ReadTimeout` cắt ngang ở giây
+  thứ 30. Sửa: `shell_wait` dùng timeout HTTP riêng = `seconds` (hoặc 60 mặc
+  định) + 15 giây đệm; các tool khác giữ nguyên `REST_TIMEOUT`. Phát hiện
+  thêm 1 lỗi liên quan khi sửa: truyền `timeout=None` tường minh cho httpx
+  per-request bị hiểu là "KHÔNG giới hạn thời gian" (khác hẳn không truyền
+  — lúc đó mới dùng default của client) — sửa bằng cách chỉ đưa kwarg
+  `timeout` vào request khi thật sự có giá trị ghi đè.
+- **Chặn đường dẫn nhạy cảm.** `file_read`/`file_write`/`file_str_replace`/
+  `file_find_in_content`/`file_find_by_name` từ chối (trả
+  `{"success": false, "message": "Duong dan bi cam boi luat cung §7 ..."}`)
+  khi đường dẫn trùng hoặc nằm trong `~/.gemini`, `~/.claude`,
+  `~/.gen-agents`, hoặc là `/etc/shadow` — luật cứng mục 7 của
+  `docs/spec/00-tong-quan.md`. Kiểm tra theo đường dẫn trực tiếp (không
+  duyệt sâu qua glob/symlink lồng nhau) — đủ chặn truy cập trực tiếp, không
+  phải phòng thủ toàn diện.
+- **Ghim version Claude Code CLI.** `npm install -g
+  @anthropic-ai/claude-code@2.1.295` (bản mới nhất trên npm lúc viết,
+  09/10/2026, kiểm bằng `npm view @anthropic-ai/claude-code version`) thay
+  vì cài "latest" trôi — build lặp lại được. Xác nhận `claude --version`
+  trong container build lại từ đầu ra đúng `2.1.295`
+  (`tool-versions-pinned.txt`).
+- **Ghi rõ `message_ask_user` chưa dừng chờ ở đợt 1** — thêm vào mục "Lệch
+  so với spec" của `docs/spec/02-mcp-trong-sandbox.md`: tool này đợt 1 chỉ
+  ghi NDJSON rồi trả ngay, KHÔNG thực sự treo CLI chờ trả lời — việc đó
+  thuộc `CliEngineFlow` (đợt 2).
+
+Bằng chứng: `pytest-review-fixes-in-container.txt` (12 test
+`test_mcp_tools.py` PASS trong container đã build lại — gồm 3 test mới:
+`test_shell_wait_long_running_past_30s` — sleep 32 + wait 35s, mất đúng
+~32s, PASS thật chứ không phải mock; `test_file_read_rejects_gemini_home`;
+`test_view_includes_real_image_content`/`test_with_screenshot_param_adds_image`/
+`test_navigate_default_has_no_image`), `supervisorctl-status.txt` (build
+lại từ Dockerfile đã ghim version, cả 7 program vẫn RUNNING),
+`tool-versions-pinned.txt` (`claude --version` → 2.1.295).

@@ -50,6 +50,7 @@ mcp = FastMCP(
 
 
 @mcp.tool(
+    structured_output=False,
     description="Execute commands in a specified shell session. Use for running code, installing packages, or managing files.",
 )
 async def shell_exec(command: str, id: Optional[str] = None, exec_dir: Optional[str] = None) -> dict:
@@ -63,6 +64,7 @@ async def shell_exec(command: str, id: Optional[str] = None, exec_dir: Optional[
 
 
 @mcp.tool(
+    structured_output=False,
     description="View the content of a specified shell session. Use for checking command execution results or monitoring output.",
 )
 async def shell_view(id: str) -> dict:
@@ -74,6 +76,7 @@ async def shell_view(id: str) -> dict:
 
 
 @mcp.tool(
+    structured_output=False,
     description="Wait for the running process in a specified shell session to return. Use after running commands that require longer runtime.",
 )
 async def shell_wait(id: str, seconds: Optional[int] = None) -> dict:
@@ -86,6 +89,7 @@ async def shell_wait(id: str, seconds: Optional[int] = None) -> dict:
 
 
 @mcp.tool(
+    structured_output=False,
     description="Write input to a running process in a specified shell session. Use for responding to interactive command prompts.",
 )
 async def shell_write_to_process(id: str, input: str, press_enter: bool) -> dict:
@@ -99,6 +103,7 @@ async def shell_write_to_process(id: str, input: str, press_enter: bool) -> dict
 
 
 @mcp.tool(
+    structured_output=False,
     description="Terminate a running process in a specified shell session. Use for stopping long-running processes or handling frozen commands.",
 )
 async def shell_kill_process(id: str) -> dict:
@@ -115,6 +120,7 @@ async def shell_kill_process(id: str) -> dict:
 
 
 @mcp.tool(
+    structured_output=False,
     description="Read file content. Use for checking file contents, analyzing logs, or reading configuration files.",
 )
 async def file_read(
@@ -134,6 +140,7 @@ async def file_read(
 
 
 @mcp.tool(
+    structured_output=False,
     description="Overwrite or append content to a file. Use for creating new files, appending content, or modifying existing files.",
 )
 async def file_write(
@@ -157,6 +164,7 @@ async def file_write(
 
 
 @mcp.tool(
+    structured_output=False,
     description="Replace specified string in a file. Use for updating specific content in files or fixing errors in code.",
 )
 async def file_str_replace(file: str, old_str: str, new_str: str, sudo: bool = False) -> dict:
@@ -171,6 +179,7 @@ async def file_str_replace(file: str, old_str: str, new_str: str, sudo: bool = F
 
 
 @mcp.tool(
+    structured_output=False,
     description="Search for matching text within file content. Use for finding specific content or patterns in files.",
 )
 async def file_find_in_content(file: str, regex: str, sudo: bool = False) -> dict:
@@ -184,6 +193,7 @@ async def file_find_in_content(file: str, regex: str, sudo: bool = False) -> dic
 
 
 @mcp.tool(
+    structured_output=False,
     description="Find files by name pattern in specified directory. Use for locating files with specific naming patterns.",
 )
 async def file_find_by_name(path: str, glob: str) -> dict:
@@ -199,28 +209,40 @@ async def file_find_by_name(path: str, glob: str) -> dict:
 # Browser (12 tool) — xem browser_tools.py
 # ---------------------------------------------------------------------------
 
-mcp.tool(description="View content of the current browser page (screenshot + url + title).")(
+mcp.tool(
+    structured_output=False, description="View content of the current browser page (screenshot + url + title).")(
     browser_tools.browser_view
 )
-mcp.tool(description="Navigate browser to specified URL.")(browser_tools.browser_navigate)
 mcp.tool(
+    structured_output=False, description="Navigate browser to specified URL.")(browser_tools.browser_navigate)
+mcp.tool(
+    structured_output=False,
     description="Open a fresh tab and navigate to specified URL (reset page state; does not kill the shared Chrome process)."
 )(browser_tools.browser_restart)
-mcp.tool(description="Click an element on the current browser page by selector, visible text, or coordinate.")(
+mcp.tool(
+    structured_output=False, description="Click an element on the current browser page by selector, visible text, or coordinate.")(
     browser_tools.browser_click
 )
-mcp.tool(description="Overwrite text in an editable element by selector or coordinate.")(browser_tools.browser_input)
-mcp.tool(description="Move mouse cursor to a position on the current page.")(browser_tools.browser_move_mouse)
-mcp.tool(description="Simulate a key press on the current browser page.")(browser_tools.browser_press_key)
-mcp.tool(description="Select an option (by index) from a dropdown element matched by CSS selector.")(
+mcp.tool(
+    structured_output=False, description="Overwrite text in an editable element by selector or coordinate.")(browser_tools.browser_input)
+mcp.tool(
+    structured_output=False, description="Move mouse cursor to a position on the current page.")(browser_tools.browser_move_mouse)
+mcp.tool(
+    structured_output=False, description="Simulate a key press on the current browser page.")(browser_tools.browser_press_key)
+mcp.tool(
+    structured_output=False, description="Select an option (by index) from a dropdown element matched by CSS selector.")(
     browser_tools.browser_select_option
 )
-mcp.tool(description="Scroll the current browser page up.")(browser_tools.browser_scroll_up)
-mcp.tool(description="Scroll the current browser page down.")(browser_tools.browser_scroll_down)
-mcp.tool(description="Execute JavaScript code in the browser console of the current page.")(
+mcp.tool(
+    structured_output=False, description="Scroll the current browser page up.")(browser_tools.browser_scroll_up)
+mcp.tool(
+    structured_output=False, description="Scroll the current browser page down.")(browser_tools.browser_scroll_down)
+mcp.tool(
+    structured_output=False, description="Execute JavaScript code in the browser console of the current page.")(
     browser_tools.browser_console_exec
 )
-mcp.tool(description="View browser console output of the current page.")(browser_tools.browser_console_view)
+mcp.tool(
+    structured_output=False, description="View browser console output of the current page.")(browser_tools.browser_console_view)
 
 
 # ---------------------------------------------------------------------------
@@ -228,12 +250,15 @@ mcp.tool(description="View browser console output of the current page.")(browser
 # ---------------------------------------------------------------------------
 
 mcp.tool(
+    structured_output=False,
     description="Update authoritative plan step statuses for the Plan panel. Call after finishing/starting a planned step."
 )(progress.plan_update)
 mcp.tool(
+    structured_output=False,
     description="Ask the user a question and wait for a response. Use only when blocked without user input."
 )(progress.message_ask_user)
 mcp.tool(
+    structured_output=False,
     description="Send a one-sentence progress/notification message to the user, no response required."
 )(progress.message_notify_user)
 
