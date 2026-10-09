@@ -1,0 +1,7 @@
+services:app                     RUNNING   pid 13, uptime 0:00:16
+services:chrome                  RUNNING   pid 8, uptime 0:00:16
+services:mcp                     RUNNING   pid 14, uptime 0:00:16
+services:socat                   RUNNING   pid 9, uptime 0:00:16
+services:websockify              RUNNING   pid 12, uptime 0:00:16
+services:x11vnc                  RUNNING   pid 149, uptime 0:00:15
+services:xvfb                    RUNNING   pid 7, uptime 0:00:16
