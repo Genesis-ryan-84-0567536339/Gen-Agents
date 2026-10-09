@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, UTC
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from enum import Enum
 import uuid
 from app.domain.models.event import PlanEvent, AgentEvent
@@ -73,6 +73,7 @@ class Session(BaseModel):
     engine: EngineKind = EngineKind.PLAN_ACT
     conversation_ref: Optional[str] = None  # id hoi thoai CLI (de --conversation/--resume)
     engine_last_seq: int = 0  # con tro phat lai /engine/events (sandbox)
+    engine_usage: Dict[str, Any] = {}  # so do dung CLI engine theo phien (thiet ke muc 5)
 
     def get_last_plan(self) -> Optional[Plan]:
         """Get the last plan from the events"""

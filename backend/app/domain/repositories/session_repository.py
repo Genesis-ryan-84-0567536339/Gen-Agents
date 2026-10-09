@@ -108,6 +108,11 @@ class SessionRepository(Protocol):
         """Update the replay cursor (engine_last_seq) for /engine/events"""
         ...
 
+    async def add_engine_usage(self, session_id: str, usage: dict) -> None:
+        """$inc per-session CLI engine usage counters (input/output/cache_read/
+        thinking/total tokens + turns) from one turn's final usage report."""
+        ...
+
     async def delete(self, session_id: str) -> None:
         """Delete a session"""
         ...

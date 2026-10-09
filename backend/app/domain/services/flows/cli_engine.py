@@ -19,11 +19,12 @@ May trang thai: IDLE -start+send-> RUNNING -ask_user-> WAITING
 -(luot sau: send)-> RUNNING; RUNNING -done-> COMPLETED;
 RUNNING|WAITING -error/chet-> ERROR.
 """
+import json
 import logging
 import time
 from asyncio import TimeoutError as AsyncTimeoutError
 from asyncio import wait_for
-from typing import AsyncGenerator, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from app.domain.external.engine import Engine, EngineContext, EngineErrorCode, EngineEvent, strip_mcp_prefix
 from app.domain.external.sandbox import Sandbox
@@ -45,6 +46,7 @@ from app.domain.models.message import Message
 from app.domain.models.plan import ExecutionStatus, Plan, Step
 from app.domain.models.session import SessionStatus
 from app.domain.models.tool_result import ToolResult
+from app.domain.repositories.engine_run_repository import EngineRunRepository
 from app.domain.repositories.session_repository import SessionRepository
 from app.domain.services.flows.base import BaseFlow
 
@@ -53,6 +55,130 @@ logger = logging.getLogger(__name__)
 # Gom text_delta thanh 1 MessageEvent; flush som neu buf vuot nguong nay
 # (tranh giu mot MessageEvent khong lo trong bo nho — thiet ke muc 3.1).
 _TEXT_BUF_FLUSH_BYTES = 32 * 1024
+
+# Luu NDJSON tho vao Mongo (thiet ke muc 5) — mot document / mot luot.
+_RAW_LINE_MAX_BYTES = 32 * 1024
+_FLUSH_EVERY_LINES = 50
+_FLUSH_EVERY_SECONDS = 2.0
+_SECRET_KEYS = frozenset({"env", "authorization", "token", "refresh_token"})
+_TOOL_OUTPUT_SHRINK_BYTES = 2 * 1024
+
+
+def _shrink(raw: Dict[str, Any]) -> Dict[str, Any]:
+    """Bo cac khoa nhay cam (gitleaks khong soi Mongo ⇒ chan o code) va cat
+    `step_update.tool_info.output` qua 2 KiB (truong phinh nhat cua NDJSON
+    agy) TRUOC khi serialize — thiet ke muc 5."""
+
+    def _walk(value: Any) -> Any:
+        if isinstance(value, dict):
+            return {k: _walk(v) for k, v in value.items() if k not in _SECRET_KEYS}
+        if isinstance(value, list):
+            return [_walk(v) for v in value]
+        return value
+
+    shrunk = _walk(raw)
+    try:
+        tool_info = shrunk["step_update"]["tool_info"]
+        output = tool_info.get("output")
+        if isinstance(output, str) and len(output.encode("utf-8", errors="ignore")) > _TOOL_OUTPUT_SHRINK_BYTES:
+            tool_info["output"] = output[:_TOOL_OUTPUT_SHRINK_BYTES] + "...(đã cắt bớt)"
+    except (KeyError, TypeError, AttributeError):
+        pass
+    return shrunk
+
+
+class _RawLineRecorder:
+    """Dem NDJSON tho theo luot (mot document Mongo / mot luot — khong phai
+    mot dong), flush gop ($push nhieu dong mot luc) vao `EngineRunRepository`.
+    Hoan toan no-op neu khong duoc truyen repository (vd test offline khong
+    can Mongo) — xem thiet ke muc 5."""
+
+    def __init__(
+        self,
+        repository: Optional[EngineRunRepository],
+        raw_keep: bool,
+        max_bytes: int,
+    ) -> None:
+        self._repository = repository
+        self._raw_keep = raw_keep
+        self._max_bytes = max_bytes
+        self._run_id: Optional[str] = None
+        self._turn_index: int = 0
+        self._buffer: List[Dict[str, Any]] = []
+        self._bytes_total = 0
+        self._dropped = 0
+        self._last_flush = time.monotonic()
+        self._capped = False
+
+    @property
+    def enabled(self) -> bool:
+        return self._repository is not None
+
+    async def open(
+        self,
+        session_id: str,
+        user_id: str,
+        engine_name: str,
+        conversation_ref: Optional[str],
+        tenant_id: Optional[str] = None,
+    ) -> None:
+        if not self.enabled:
+            return
+        try:
+            self._run_id, self._turn_index = await self._repository.open_turn(
+                session_id, user_id, engine_name,
+                conversation_ref=conversation_ref, tenant_id=tenant_id,
+            )
+        except Exception:
+            logger.warning("Khong mo duoc engine_run cho session %s", session_id, exc_info=True)
+            self._run_id = None
+
+    async def record(self, seq: int, raw: Dict[str, Any]) -> None:
+        if not self.enabled or self._run_id is None or not self._raw_keep:
+            return
+        if self._capped:
+            self._dropped += 1
+            return
+        line_json = json.dumps(_shrink(raw), ensure_ascii=False)
+        truncated = False
+        encoded = line_json.encode("utf-8")
+        if len(encoded) > _RAW_LINE_MAX_BYTES:
+            line_json = encoded[:_RAW_LINE_MAX_BYTES].decode("utf-8", errors="ignore")
+            truncated = True
+        entry_bytes = len(line_json.encode("utf-8"))
+        if self._bytes_total + entry_bytes > self._max_bytes:
+            self._capped = True
+            self._dropped += 1
+            return
+        self._bytes_total += entry_bytes
+        entry: Dict[str, Any] = {"seq": seq, "stream": "stdout", "ts": time.time(), "raw": line_json}
+        if truncated:
+            entry["truncated"] = True
+        self._buffer.append(entry)
+        now = time.monotonic()
+        if len(self._buffer) >= _FLUSH_EVERY_LINES or now - self._last_flush >= _FLUSH_EVERY_SECONDS:
+            await self.flush()
+
+    async def flush(self) -> None:
+        self._last_flush = time.monotonic()
+        if not self.enabled or self._run_id is None or not self._buffer:
+            return
+        pending, self._buffer = self._buffer, []
+        try:
+            await self._repository.append_lines(self._run_id, pending)
+        except Exception:
+            logger.warning("Khong ghi duoc engine_run lines cho run %s", self._run_id, exc_info=True)
+
+    async def close(self, status: str, usage: Optional[Dict[str, Any]] = None) -> None:
+        if not self.enabled or self._run_id is None:
+            return
+        await self.flush()
+        try:
+            if self._dropped:
+                await self._repository.mark_dropped(self._run_id, self._dropped)
+            await self._repository.close_turn(self._run_id, status, usage=usage)
+        except Exception:
+            logger.warning("Khong dong duoc engine_run %s", self._run_id, exc_info=True)
 
 _STEP_STATUS_MAP = {
     "pending": ExecutionStatus.PENDING,
@@ -123,9 +249,18 @@ class CliEngineFlow(BaseFlow):
         idle_timeout: int = 600,
         max_turn_seconds: int = 3600,
         status_ping_interval: int = 60,
+        user_id: Optional[str] = None,
+        engine_run_repository: Optional[EngineRunRepository] = None,
+        raw_keep: bool = True,
+        raw_max_bytes: int = 2_000_000,
     ):
         self._agent_id = agent_id
         self._session_id = session_id
+        self._user_id = user_id
+        self._engine_run_repository = engine_run_repository
+        self._raw_keep = raw_keep
+        self._raw_max_bytes = raw_max_bytes
+        self._latest_usage: Dict[str, Any] = {}
         self._session_repository = session_repository
         self._sandbox = sandbox
         self._engine = engine
@@ -179,6 +314,15 @@ class CliEngineFlow(BaseFlow):
                 message="Động cơ đã khởi chạy lại, lịch sử trước đó không nối được.",
             )
 
+        self._latest_usage = {}
+        recorder = _RawLineRecorder(self._engine_run_repository, self._raw_keep, self._raw_max_bytes)
+        await recorder.open(
+            self._session_id,
+            self._user_id or "",
+            getattr(self._engine, "engine_name", self._engine_kind_name()),
+            ctx.conversation_ref,
+        )
+
         await self._engine.send(message.message, message.attachments or None)
 
         last_seq = getattr(session, "engine_last_seq", 0) or 0
@@ -191,6 +335,7 @@ class CliEngineFlow(BaseFlow):
         turn_deadline = time.monotonic() + self._max_turn_seconds
         last_event_at = time.monotonic()
         last_status_ping = time.monotonic()
+        turn_status = "ERROR"
 
         try:
             while True:
@@ -198,6 +343,7 @@ class CliEngineFlow(BaseFlow):
                 if now >= turn_deadline:
                     await self._engine.stop()
                     self._done = True
+                    turn_status = "ERROR"
                     yield ErrorEvent(error=format_error_message("timeout", None))
                     return
 
@@ -216,16 +362,19 @@ class CliEngineFlow(BaseFlow):
                     idle_for = time.monotonic() - last_event_at
                     if idle_for >= self._idle_timeout and not await self._engine_still_alive():
                         self._done = True
+                        turn_status = "ERROR"
                         yield ErrorEvent(error=format_error_message("tien_trinh_chet", None))
                         return
                     continue
                 except StopAsyncIteration:
                     self._done = True
+                    turn_status = "ERROR"
                     yield ErrorEvent(error=format_error_message("tien_trinh_chet", None))
                     return
 
                 last_event_at = time.monotonic()
                 await self._update_engine_cursor(seq)
+                await recorder.record(seq, engine_event.raw)
 
                 stop_after = False
                 for agent_event in await self._translate_engine_event(engine_event):
@@ -234,20 +383,28 @@ class CliEngineFlow(BaseFlow):
                         await self._session_repository.update_title(self._session_id, agent_event.title)
                     if isinstance(agent_event, WaitEvent):
                         self._done = False
+                        turn_status = "WAITING"
                         stop_after = True
                         break
                     if isinstance(agent_event, DoneEvent):
                         self._done = True
+                        turn_status = "SUCCESS"
                         stop_after = True
                         break
                     if isinstance(agent_event, ErrorEvent):
                         self._done = True
+                        turn_status = "ERROR"
                         stop_after = True
                         break
                 if stop_after:
                     return
         finally:
-            pass
+            await recorder.close(turn_status, usage=self._latest_usage or None)
+            if self._latest_usage:
+                await self._add_engine_usage(self._latest_usage)
+
+    def _engine_kind_name(self) -> str:
+        return type(self._engine).__name__
 
     async def _engine_still_alive(self) -> bool:
         """Kiem tra song/chet THUC SU qua `/engine/status` — khong dung
@@ -282,6 +439,25 @@ class CliEngineFlow(BaseFlow):
             # dich su kien cua luot hien tai.
             logger.debug("SessionRepository chua ho tro update_engine_cursor")
 
+    async def _update_conversation_ref(self, conversation_ref: str) -> None:
+        """`conversation_id` tu `init` -> ghi vao `Session.conversation_ref`
+        (thiet ke muc 3.1) — de luot sau (hoac noi lai sau WAITING/tien
+        trinh chet) biet `--conversation`/`--resume` gia tri gi."""
+        try:
+            await self._session_repository.update_conversation_ref(self._session_id, conversation_ref)
+        except AttributeError:
+            logger.debug("SessionRepository chua ho tro update_conversation_ref")
+        except Exception:
+            logger.warning("Khong ghi duoc conversation_ref cho session %s", self._session_id, exc_info=True)
+
+    async def _add_engine_usage(self, usage: Dict[str, Any]) -> None:
+        try:
+            await self._session_repository.add_engine_usage(self._session_id, usage)
+        except AttributeError:
+            logger.debug("SessionRepository chua ho tro add_engine_usage")
+        except Exception:
+            logger.warning("Khong ghi duoc engine_usage cho session %s", self._session_id, exc_info=True)
+
     # ------------------------------------------------------------------
     # Dich EngineEvent -> AgentEvent (thiet ke muc 3.1)
     # ------------------------------------------------------------------
@@ -302,6 +478,8 @@ class CliEngineFlow(BaseFlow):
             if self._pending_title:
                 out.append(TitleEvent(title=self._pending_title))
                 self._pending_title = None
+            if ev.conversation_ref:
+                await self._update_conversation_ref(ev.conversation_ref)
             return out
 
         if ev.kind == "text_delta":
@@ -356,8 +534,14 @@ class CliEngineFlow(BaseFlow):
             return out
 
         if ev.kind == "usage":
-            # Ghi usage vao Mongo la viec cua repo engine_run (thiet ke muc 5);
-            # khong phat AgentEvent nao cho nguoi dung thay.
+            # CLI thuong bao usage LUY KE theo luot (khong phai delta) o
+            # nhieu dong khac nhau trong cung 1 luot — giu gia tri CUOI
+            # CUNG thay vi cong don de khong dem trung token. Ghi thuc vao
+            # Mongo (SessionDocument.engine_usage, $inc turns=1 mot lan cuoi
+            # luot) xay ra o run()/finally — khong phat AgentEvent nao cho
+            # nguoi dung thay (thiet ke muc 5).
+            if ev.usage:
+                self._latest_usage = dict(ev.usage)
             return out
 
         if ev.kind == "done":

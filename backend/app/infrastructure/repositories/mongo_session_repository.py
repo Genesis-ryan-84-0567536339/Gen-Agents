@@ -343,3 +343,21 @@ class MongoSessionRepository(SessionRepository):
         )
         if not result:
             raise ValueError(f"Session {session_id} not found")
+
+    async def add_engine_usage(self, session_id: str, usage: dict) -> None:
+        """$inc per-session CLI engine usage counters (thiet ke muc 5)"""
+        inc: dict = {"engine_usage.turns": 1}
+        for field_name in (
+            "input_tokens", "output_tokens", "cache_read_tokens",
+            "thinking_tokens", "total_tokens",
+        ):
+            value = usage.get(field_name)
+            if isinstance(value, (int, float)):
+                inc[f"engine_usage.{field_name}"] = value
+        result = await SessionDocument.find_one(
+            SessionDocument.session_id == session_id
+        ).update(
+            {"$inc": inc, "$set": {"updated_at": datetime.now(UTC)}}
+        )
+        if not result:
+            raise ValueError(f"Session {session_id} not found")

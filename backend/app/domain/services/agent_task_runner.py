@@ -35,6 +35,7 @@ from app.domain.external.task import TaskRunner, TaskRunnerFactory, Task
 from app.domain.repositories.session_repository import SessionRepository
 from app.domain.repositories.mcp_repository import MCPRepository
 from app.domain.repositories.project_repository import ProjectRepository
+from app.domain.repositories.engine_run_repository import EngineRunRepository
 from app.domain.models.session import EngineKind, SessionStatus, TaskMode
 from app.domain.models.file import FileInfo
 from app.domain.services.tools.mcp import MCPToolkit
@@ -80,6 +81,7 @@ class AgentTaskRunner(TaskRunner):
         project_repository: Optional[ProjectRepository] = None,
         skill_runtime_service: Optional[SkillRuntimeService] = None,
         engine: EngineKind = EngineKind.PLAN_ACT,
+        engine_run_repository: Optional[EngineRunRepository] = None,
     ):
         self._session_id = session_id
         self._agent_id = agent_id
@@ -93,6 +95,7 @@ class AgentTaskRunner(TaskRunner):
         self._mcp_repository = mcp_repository
         self._project_repository = project_repository
         self._skill_runtime_service = skill_runtime_service
+        self._engine_run_repository = engine_run_repository
         self._llm = llm
         self._mcp_tool = MCPToolkit()
         self._engine_kind = engine
@@ -141,6 +144,10 @@ class AgentTaskRunner(TaskRunner):
             cwd="/home/ubuntu",
             idle_timeout=settings.gen_engine_idle_timeout,
             max_turn_seconds=settings.gen_engine_max_turn_seconds,
+            user_id=self._user_id,
+            engine_run_repository=self._engine_run_repository,
+            raw_keep=settings.gen_engine_raw_keep,
+            raw_max_bytes=settings.gen_engine_raw_max_bytes,
         )
 
     async def _resolve_project_instruction(self, project_id: Optional[str]) -> Optional[str]:
@@ -568,6 +575,7 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
         search_engine: Optional[SearchEngine] = None,
         project_repository: Optional[ProjectRepository] = None,
         skill_runtime_service: Optional[SkillRuntimeService] = None,
+        engine_run_repository: Optional[EngineRunRepository] = None,
     ):
         self._agent_repository = agent_repository
         self._session_repository = session_repository
@@ -577,6 +585,7 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
         self._llm = llm
         self._search_engine = search_engine
         self._project_repository = project_repository
+        self._engine_run_repository = engine_run_repository
         self._skill_runtime_service = skill_runtime_service
 
     @staticmethod
@@ -620,4 +629,5 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
             project_repository=self._project_repository,
             skill_runtime_service=self._skill_runtime_service,
             engine=engine,
+            engine_run_repository=self._engine_run_repository,
         )

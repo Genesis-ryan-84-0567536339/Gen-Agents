@@ -127,6 +127,7 @@ class SessionDocument(BaseDocument[Session], id_field="session_id", domain_model
     engine: Optional[EngineKind] = EngineKind.PLAN_ACT
     conversation_ref: Optional[str] = None
     engine_last_seq: int = 0
+    engine_usage: Dict[str, Any] = {}
     class Settings:
         name = "sessions"
         indexes = [
@@ -144,6 +145,40 @@ class SessionDocument(BaseDocument[Session], id_field="session_id", domain_model
             IndexModel(
                 [("user_id", ASCENDING), ("is_pinned", DESCENDING), ("latest_message_at", DESCENDING)],
                 name="user_id_is_pinned_latest",
+            ),
+        ]
+
+
+class EngineRunDocument(Document):
+    """NDJSON tho + usage cua MOT luot CLI engine (agy/Claude Code) — docs/design/
+    dot-2-cli-engine.md muc 5. Mot document / mot luot (khong phai mot dong).
+    `lines` duoc _shrink + cat trong CliEngineFlow/_RawLineRecorder TRUOC khi
+    ghi (cac khoa nhay cam da bi bo, tool_info.output lon da bi cat) — gitleaks
+    khong soi Mongo nen phai chan o code, khong phai o CI."""
+    run_id: str
+    session_id: str
+    user_id: str
+    tenant_id: Optional[str] = None  # cho SaaS (00-tong-quan.md §11); dot 2 luon None
+    engine: str
+    conversation_ref: Optional[str] = None
+    turn_index: int
+    started_at: datetime
+    ended_at: Optional[datetime] = None
+    status: Optional[str] = None  # RUNNING|WAITING|SUCCESS|ERROR
+    lines: List[Dict[str, Any]] = []  # {seq, stream, ts, raw}
+    lines_dropped: int = 0
+    bytes_total: int = 0
+    usage: Dict[str, Any] = {}
+
+    class Settings:
+        name = "engine_runs"
+        indexes = [
+            "session_id",
+            "user_id",
+            IndexModel(
+                [("session_id", ASCENDING), ("turn_index", ASCENDING)],
+                name="session_turn",
+                unique=True,
             ),
         ]
 

@@ -183,6 +183,7 @@ class FakeSessionRepository:
         self.titles: list[str] = []
         self.engine_cursor_updates: list[int] = []
         self.conversation_ref_updates: list[Optional[str]] = []
+        self.engine_usage_calls: list[dict] = []
 
     async def find_by_id(self, session_id: str):
         return self.session
@@ -202,6 +203,9 @@ class FakeSessionRepository:
     async def update_conversation_ref(self, session_id: str, conversation_ref: Optional[str]) -> None:
         self.session.conversation_ref = conversation_ref
         self.conversation_ref_updates.append(conversation_ref)
+
+    async def add_engine_usage(self, session_id: str, usage: dict) -> None:
+        self.engine_usage_calls.append(usage)
 
 
 class StubAgent(BaseAgent):
@@ -278,6 +282,44 @@ class FakeEngine:
         return self._alive
 
 
+class FakeEngineRunRepository:
+    """EngineRunRepository gia lap trong bo nho — Issue #30 (thiet ke muc 5).
+    Luu moi luot nhu mot dict, khong can Mongo."""
+
+    def __init__(self) -> None:
+        self.runs: Dict[str, dict] = {}
+        self._next_turn_index: Dict[str, int] = {}
+
+    async def open_turn(self, session_id, user_id, engine, conversation_ref=None, tenant_id=None):
+        turn_index = self._next_turn_index.get(session_id, 0) + 1
+        self._next_turn_index[session_id] = turn_index
+        run_id = f"run-{session_id}-{turn_index}"
+        self.runs[run_id] = {
+            "run_id": run_id, "session_id": session_id, "user_id": user_id,
+            "tenant_id": tenant_id, "engine": engine, "conversation_ref": conversation_ref,
+            "turn_index": turn_index, "status": "RUNNING", "lines": [],
+            "lines_dropped": 0, "usage": {},
+        }
+        return run_id, turn_index
+
+    async def append_lines(self, run_id, lines):
+        self.runs[run_id]["lines"].extend(lines)
+
+    async def mark_dropped(self, run_id, count):
+        self.runs[run_id]["lines_dropped"] += count
+
+    async def close_turn(self, run_id, status, usage=None):
+        self.runs[run_id]["status"] = status
+        if usage:
+            self.runs[run_id]["usage"] = usage
+
+    async def find_by_session(self, session_id):
+        return sorted(
+            (run for run in self.runs.values() if run["session_id"] == session_id),
+            key=lambda r: r["turn_index"],
+        )
+
+
 def build_cli_engine_flow(
     engine: Engine,
     *,
@@ -289,6 +331,10 @@ def build_cli_engine_flow(
     idle_timeout: int = 600,
     max_turn_seconds: int = 3600,
     status_ping_interval: int = 60,
+    user_id: str = "user-1",
+    engine_run_repository: Optional[FakeEngineRunRepository] = None,
+    raw_keep: bool = True,
+    raw_max_bytes: int = 2_000_000,
 ) -> CliEngineFlow:
     return CliEngineFlow(
         agent_id="agent-1",
@@ -301,6 +347,10 @@ def build_cli_engine_flow(
         idle_timeout=idle_timeout,
         max_turn_seconds=max_turn_seconds,
         status_ping_interval=status_ping_interval,
+        user_id=user_id,
+        engine_run_repository=engine_run_repository,
+        raw_keep=raw_keep,
+        raw_max_bytes=raw_max_bytes,
     )
 
 
