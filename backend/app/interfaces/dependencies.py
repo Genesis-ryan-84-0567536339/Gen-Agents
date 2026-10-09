@@ -37,6 +37,7 @@ from app.infrastructure.repositories.mongo_project_repository import MongoProjec
 from app.infrastructure.repositories.mongo_skill_repository import MongoSkillRepository
 from app.infrastructure.repositories.mongo_user_skill_repository import MongoUserSkillRepository
 from app.infrastructure.repositories.mongo_file_favorite_repository import MongoFileFavoriteRepository
+from app.infrastructure.repositories.mongo_engine_run_repository import MongoEngineRunRepository
 
 
 # Configure logging
@@ -91,6 +92,7 @@ def get_agent_service() -> AgentService:
         search_engine=search_engine,
         project_repository=MongoProjectRepository(),
         skill_runtime_service=get_skill_runtime_service(),
+        engine_run_repository=MongoEngineRunRepository(),
     ))
     
     # Create AgentService instance

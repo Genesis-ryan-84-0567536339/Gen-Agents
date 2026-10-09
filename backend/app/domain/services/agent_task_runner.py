@@ -24,6 +24,7 @@ from app.domain.models.event import (
     FileUpdateEvent,
 )
 from app.domain.services.flows.plan_act import PlanActFlow
+from app.domain.services.flows.cli_engine import CliEngineFlow
 from app.domain.external.sandbox import Sandbox
 from app.domain.external.browser import Browser
 from app.domain.external.search import SearchEngine
@@ -34,13 +35,17 @@ from app.domain.external.task import TaskRunner, TaskRunnerFactory, Task
 from app.domain.repositories.session_repository import SessionRepository
 from app.domain.repositories.mcp_repository import MCPRepository
 from app.domain.repositories.project_repository import ProjectRepository
-from app.domain.models.session import SessionStatus, TaskMode
+from app.domain.repositories.engine_run_repository import EngineRunRepository
+from app.domain.models.session import EngineKind, SessionStatus, TaskMode
 from app.domain.models.file import FileInfo
 from app.domain.services.tools.mcp import MCPToolkit
 from app.domain.models.tool_result import ToolResult
 from app.domain.models.search import SearchResults
 from app.domain.services.prompts.system import format_project_instructions
 from app.application.services.skill_runtime_service import SkillRuntimeService
+from app.core.config import get_settings
+from app.infrastructure.external.engine.agy_engine import AgyEngine
+from app.infrastructure.external.engine.claude_code_engine import ClaudeCodeEngine
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +80,8 @@ class AgentTaskRunner(TaskRunner):
         search_engine: Optional[SearchEngine] = None,
         project_repository: Optional[ProjectRepository] = None,
         skill_runtime_service: Optional[SkillRuntimeService] = None,
+        engine: EngineKind = EngineKind.PLAN_ACT,
+        engine_run_repository: Optional[EngineRunRepository] = None,
     ):
         self._session_id = session_id
         self._agent_id = agent_id
@@ -88,22 +95,60 @@ class AgentTaskRunner(TaskRunner):
         self._mcp_repository = mcp_repository
         self._project_repository = project_repository
         self._skill_runtime_service = skill_runtime_service
+        self._engine_run_repository = engine_run_repository
         self._llm = llm
         self._mcp_tool = MCPToolkit()
-        self._flow = PlanActFlow(
-            self._agent_id,
-            self._repository,
-            self._session_id,
-            self._session_repository,
-            self._sandbox,
-            self._browser,
-            self._mcp_tool,
-            self._llm,
-            self._search_engine,
-            project_repository=self._project_repository,
-        )
+        self._engine_kind = engine
+        self._flow = self._build_flow(engine)
         # Snapshot file contents before mutating file tools (for Diff/Original views).
         self._file_old_by_call: Dict[str, str] = {}
+
+    def _build_flow(self, engine: EngineKind):
+        """Diem re giua dong co LangChain (plan_act, mac dinh — khong doi)
+        va mot CLI engine lam "nao" (agy/claude_code) — xem
+        docs/design/dot-2-cli-engine.md muc 4."""
+        if engine == EngineKind.PLAN_ACT:
+            return PlanActFlow(
+                self._agent_id,
+                self._repository,
+                self._session_id,
+                self._session_repository,
+                self._sandbox,
+                self._browser,
+                self._mcp_tool,
+                self._llm,
+                self._search_engine,
+                project_repository=self._project_repository,
+            )
+
+        settings = get_settings()
+        if engine == EngineKind.AGY:
+            cli_engine = AgyEngine(self._sandbox, binary=settings.gen_engine_binary_agy)
+            model = settings.gen_engine_model_agy
+        elif engine == EngineKind.CLAUDE_CODE:
+            cli_engine = ClaudeCodeEngine(self._sandbox)
+            model = None
+        else:
+            raise ValueError(f"Unknown engine kind: {engine}")
+
+        home = settings.gen_engine_dev_home or "/home/ubuntu"
+        return CliEngineFlow(
+            agent_id=self._agent_id,
+            session_id=self._session_id,
+            session_repository=self._session_repository,
+            sandbox=self._sandbox,
+            engine=cli_engine,
+            model=model,
+            effort=settings.gen_engine_effort,
+            home=home,
+            cwd="/home/ubuntu",
+            idle_timeout=settings.gen_engine_idle_timeout,
+            max_turn_seconds=settings.gen_engine_max_turn_seconds,
+            user_id=self._user_id,
+            engine_run_repository=self._engine_run_repository,
+            raw_keep=settings.gen_engine_raw_keep,
+            raw_max_bytes=settings.gen_engine_raw_max_bytes,
+        )
 
     async def _resolve_project_instruction(self, project_id: Optional[str]) -> Optional[str]:
         if not project_id or not self._project_repository:
@@ -420,7 +465,10 @@ class AgentTaskRunner(TaskRunner):
 
     async def _run_flow(self, message: Message) -> AsyncGenerator[BaseEvent, None]:
         """Process a single message through the agent's flow and yield events"""
-        if self._skill_runtime_service:
+        # CliEngineFlow (dot 2) khong nhan skill — render skill vao HOME CLI
+        # la viec dot 3 (docs/design/dot-2-cli-engine.md muc 4.5). Boc bang
+        # hasattr de khong goi nham phuong thuc flow khac khong co.
+        if self._skill_runtime_service and hasattr(self._flow, "set_enabled_skills"):
             pairs = await self._skill_runtime_service.list_enabled_skill_pairs(
                 self._user_id
             )
@@ -428,6 +476,7 @@ class AgentTaskRunner(TaskRunner):
                 self._user_id
             )
             self._flow.set_enabled_skills(pairs, bodies)
+        if self._skill_runtime_service and hasattr(self._flow, "set_skill_catalog"):
             catalog = await self._skill_runtime_service.build_skill_catalog_section(
                 self._user_id
             )
@@ -526,6 +575,7 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
         search_engine: Optional[SearchEngine] = None,
         project_repository: Optional[ProjectRepository] = None,
         skill_runtime_service: Optional[SkillRuntimeService] = None,
+        engine_run_repository: Optional[EngineRunRepository] = None,
     ):
         self._agent_repository = agent_repository
         self._session_repository = session_repository
@@ -535,6 +585,7 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
         self._llm = llm
         self._search_engine = search_engine
         self._project_repository = project_repository
+        self._engine_run_repository = engine_run_repository
         self._skill_runtime_service = skill_runtime_service
 
     @staticmethod
@@ -554,6 +605,15 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
         browser = await sandbox.get_browser()
         if not browser:
             raise RuntimeError(f"Failed to get browser for Sandbox {sandbox_id}")
+
+        # Diem re dong co (docs/design/dot-2-cli-engine.md muc 4.4): __init__
+        # cua AgentTaskRunner la sync nen khong doc duoc Session — doc o day
+        # (create_runner von da la async) roi truyen engine= xuong.
+        engine = EngineKind.PLAN_ACT
+        session = await self._session_repository.find_by_id(params["session_id"])
+        if session is not None:
+            engine = session.engine or EngineKind.PLAN_ACT
+
         return AgentTaskRunner(
             session_id=params["session_id"],
             agent_id=params["agent_id"],
@@ -568,4 +628,6 @@ class AgentTaskRunnerFactory(TaskRunnerFactory):
             search_engine=self._search_engine,
             project_repository=self._project_repository,
             skill_runtime_service=self._skill_runtime_service,
+            engine=engine,
+            engine_run_repository=self._engine_run_repository,
         )

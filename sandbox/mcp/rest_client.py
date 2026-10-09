@@ -27,6 +27,18 @@ _FORBIDDEN_DIRS = [
     os.path.realpath(os.path.expanduser("~/.claude")),
     os.path.realpath(os.path.expanduser("~/.gen-agents")),
 ]
+
+# HOME tam cho dev (docs/design/dot-2-cli-engine.md muc 6): program:mcp chay
+# voi HOME=/home/ubuntu co dinh (supervisord.conf) nen "~" o tren KHONG nở ra
+# GEN_ENGINE_DEV_HOME — phai them rieng, neu khong agent tu doc duoc phien
+# dang nhap CLI cua chinh no qua file_read/file_write. San xuat KHONG dat bien
+# nay nen danh sach khong doi.
+_dev_home = os.environ.get("GEN_ENGINE_DEV_HOME")
+if _dev_home:
+    _FORBIDDEN_DIRS.extend(
+        os.path.realpath(p)
+        for p in (_dev_home, os.path.join(_dev_home, ".gemini"), os.path.join(_dev_home, ".claude"))
+    )
 _FORBIDDEN_FILES = [os.path.realpath("/etc/shadow")]
 _FORBIDDEN_MESSAGE = "Duong dan bi cam boi luat cung §7 (docs/spec/00-tong-quan.md muc 7): khong duoc doc/ghi thu muc phien dang nhap CLI hoac file he thong nhay cam."
 

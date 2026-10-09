@@ -136,7 +136,26 @@ class Settings(BaseSettings):
 
     # MCP configuration
     mcp_config_path: str = "/etc/mcp.json"
-    
+
+    # CLI engine (agy/Claude Code) — docs/design/dot-2-cli-engine.md muc 4.
+    # Mac dinh "plan_act" de KHONG doi hanh vi cu cho tenant chua chon dong co.
+    gen_engine_default: str = "plan_act"
+    # Da xac minh bang `agy models` tren may Boss 09/10/2026 (Chot cua Claude
+    # dieu phoi, xem docs/design/dot-2-cli-engine.md cuoi file) — gia re nhat
+    # trong danh sach, dung cho test/nghiem thu.
+    gen_engine_model_agy: str = "gemini-3.8-flash-low"
+    gen_engine_effort: str = "low"
+    # HOME tam dev (docs/design muc 6) — KHONG dat o production. None =
+    # dung HOME mac dinh cua sandbox (/home/ubuntu).
+    gen_engine_dev_home: str | None = None
+    # Cho phep doi binary thanh fake_agy.py trong test/CI (muc 7.3).
+    gen_engine_binary_agy: str = "agy"
+    gen_engine_idle_timeout: int = 600
+    gen_engine_max_turn_seconds: int = 3600
+    # Luu NDJSON tho vao Mongo (muc 5) — tat de chi luu usage/status.
+    gen_engine_raw_keep: bool = True
+    gen_engine_raw_max_bytes: int = 2_000_000
+
     # Logging configuration
     log_level: str = "INFO"
     

@@ -1,0 +1,6 @@
+Bang chung muc 1 — agy (fake_agy.py, FAKE_AGY_MODE=success) nhan luot qua stdin, tra result SUCCESS
+Lenh: POST /api/v1/engine/start -> POST /api/v1/engine/send -> GET /api/v1/engine/events (SSE)
+engine_id=evidence-success-1791550944
+---
+{"success":true,"message":"Engine da khoi chay","data":{"engine_id":"evidence-success-1791550944","pid":646,"alive":true,"started_at":1791550944.5343456,"reused":false}}
+--- NDJSON thuc nhan duoc qua /engine/events (da luu rieng o 01-engine-api-sse.txt) ---

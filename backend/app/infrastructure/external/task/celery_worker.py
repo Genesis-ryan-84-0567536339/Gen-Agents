@@ -50,6 +50,7 @@ def _build_runner_factory():
     from app.infrastructure.repositories.mongo_session_repository import MongoSessionRepository
     from app.infrastructure.repositories.mongo_project_repository import MongoProjectRepository
     from app.infrastructure.repositories.file_mcp_repository import FileMCPRepository
+    from app.infrastructure.repositories.mongo_engine_run_repository import MongoEngineRunRepository
     from app.application.services.skill_runtime_service import SkillRuntimeService
     from app.application.services.skill_service import SkillService
     from app.infrastructure.repositories.mongo_skill_repository import MongoSkillRepository
@@ -74,6 +75,7 @@ def _build_runner_factory():
         search_engine=get_search_engine(),
         project_repository=MongoProjectRepository(),
         skill_runtime_service=skill_runtime,
+        engine_run_repository=MongoEngineRunRepository(),
     )
 
 
@@ -93,6 +95,7 @@ async def _ensure_initialized() -> None:
         FileFavoriteDocument,
         SkillDocument,
         UserSkillDocument,
+        EngineRunDocument,
     )
 
     settings = get_settings()
@@ -107,6 +110,7 @@ async def _ensure_initialized() -> None:
             FileFavoriteDocument,
             SkillDocument,
             UserSkillDocument,
+            EngineRunDocument,
         ],
     )
     await get_redis().initialize()

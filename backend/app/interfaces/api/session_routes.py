@@ -15,6 +15,7 @@ from app.interfaces.schemas.session import (
     FavoriteSessionResponse, PinSessionRequest, PinSessionResponse,
     MoveSessionProjectRequest, MoveSessionProjectResponse,
     UpdateSessionTaskModeRequest, UpdateSessionTaskModeResponse,
+    UpdateSessionEngineRequest, UpdateSessionEngineResponse,
     LibraryFileItem, LibraryResponse,
 )
 from app.interfaces.schemas.file import FileViewRequest, FileViewResponse
@@ -58,6 +59,7 @@ async def get_session(
         is_pinned=session.is_pinned,
         project_id=session.project_id,
         task_mode=session.task_mode,
+        engine=session.engine,
     ))
 
 @router.delete("/{session_id}", response_model=APIResponse[None])
@@ -140,6 +142,24 @@ async def update_session_task_mode(
     return APIResponse.success(UpdateSessionTaskModeResponse(
         session_id=session_id,
         task_mode=request.task_mode,
+    ))
+
+@router.patch("/{session_id}/engine", response_model=APIResponse[UpdateSessionEngineResponse])
+async def update_session_engine(
+    session_id: str,
+    request: UpdateSessionEngineRequest,
+    current_user: User = Depends(get_current_user),
+    agent_service: AgentService = Depends(get_agent_service),
+) -> APIResponse[UpdateSessionEngineResponse]:
+    """Doi dong co chay phien (plan_act | agy | claude_code). Frontend KHONG
+    goi API nay (docs/design/dot-2-cli-engine.md muc 4) — doi bang curl:
+    `curl -X PATCH .../sessions/{id}/engine -d '{"engine":"agy"}'`."""
+    await agent_service.update_session_engine(
+        session_id, current_user.id, request.engine.value
+    )
+    return APIResponse.success(UpdateSessionEngineResponse(
+        session_id=session_id,
+        engine=request.engine,
     ))
 
 @router.post("/{session_id}/stop", response_model=APIResponse[None])

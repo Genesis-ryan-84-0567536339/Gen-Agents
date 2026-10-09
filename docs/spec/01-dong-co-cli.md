@@ -147,3 +147,41 @@ Instruction sinh vào `AGENTS.md`/`CLAUDE.md` nói rõ: dùng trình duyệt ch�
 ## 9. Câu hỏi mở
 - agy có tool trình duyệt gốc nào trong CLI không (danh sách 60 tool ở `init`)? Nếu có, tắt bằng `permissions.deny` trong `settings.json`.
 - Đường dẫn skills của Claude Code trong HOME tạm (xác minh khi thi công).
+
+## Lệch so với spec và lý do (thi công đợt 2, Issue #30)
+
+Ghi lại đúng chỗ thực tế thi công buộc khác với mô tả ở các mục trên —
+chi tiết đầy đủ ở `docs/design/dot-2-cli-engine.md` (bản thiết kế Opus đã
+chốt) và `docs/evidence/dot-2/README.md` (bằng chứng + lỗi tìm thấy khi
+chạy thật). Không có mục nào đổi *ý định* của spec.
+
+1. **`Engine.events()` nhận `from_seq` và yield `(seq, EngineEvent)`**, không
+   phải `AsyncIterator[EngineEvent]` trơn như mục 2 mô tả — cần để
+   `CliEngineFlow` nối lại đúng chỗ sau khi phiên đi qua `WAITING` (Task mới,
+   kết nối SSE mới ở tầng sandbox). `conversation_ref`/`alive` là property
+   đọc trạng thái sống của Engine, không phải field tĩnh trên `EngineContext`.
+2. **`EngineContext` không có field `sandbox`** — adapter (`AgyEngine`,
+   `ClaudeCodeEngine`) nhận `Sandbox` qua constructor (`AgyEngine(sandbox,
+   binary=...)`), không qua context, để tránh một Protocol phải tự chứa một
+   Protocol khác.
+3. **`message_ask_user` dừng ở BIÊN LƯỢT** (CLI hỏi xong thì
+   `CliEngineFlow` phát `WaitEvent` và kết thúc generator của lượt đó ngay —
+   không đợi/giữ tiến trình chờ một kênh trả lời liên tiến trình). Tiến
+   trình CLI thật sự vẫn sống (process không bị kill), chỉ là backend không
+   đọc tiếp NDJSON của nó cho tới lượt kế. Bản "treo tool thật" (CLI tự
+   block trong tool call chờ `/engine/answer`) để đợt 3 — xem "Chốt của
+   Claude điều phối" cuối `docs/design/dot-2-cli-engine.md`.
+4. **Mục 1b (tiền tố tên tool MCP agy thực sự in ra) CHƯA ĐO ĐƯỢC** — không
+   đăng nhập được agy thật trong phiên thi công tự động (xem
+   `docs/evidence/dot-2/06-home-dev-agy-login.txt`). `_MCP_PREFIX` trong
+   `backend/app/domain/external/engine.py` vẫn ở dạng khoan dung (regex
+   đoán nhiều biến thể tiền tố), chưa xác nhận bằng NDJSON thật — việc đo +
+   khoá chính xác dời sang đợt 3.
+5. **`ToolEvent(CALLED)` mang lại `function_args` của chính `tool_call`
+   tương ứng** (qua một map `tool_call_id -> args` tạm thời trong
+   `CliEngineFlow`), không phải rỗng như gợi ý ở bảng "EngineEvent → AgentEvent"
+   — `_handle_tool_event` (agent_task_runner.py) cần `function_args["file"]`/
+   `["id"]` ở sự kiện CALLED để làm tươi `FileToolContent`/`ShellToolContent`.
+   Lỗi này chỉ lộ ra khi chạy thật (file content hiện "(No Content)"), test
+   offline viết trước không bắt được — xem mục "Lỗi tìm thấy khi chạy thật"
+   trong `docs/evidence/dot-2/README.md`.

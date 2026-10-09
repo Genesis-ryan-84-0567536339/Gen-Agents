@@ -294,6 +294,19 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
 # MCP configuration
 #MCP_CONFIG_PATH=/etc/mcp.json
 
+# CLI engine configuration (agy/Claude Code) — docs/design/dot-2-cli-engine.md
+# GEN_ENGINE_DEFAULT: "plan_act" (mac dinh, khong doi hanh vi cu) | "agy" | "claude_code"
+#GEN_ENGINE_DEFAULT=plan_act
+#GEN_ENGINE_MODEL_AGY=gemini-3.8-flash-low
+#GEN_ENGINE_EFFORT=low
+# Chi dat trong dev/CI (xem docker-compose-development.yml) — KHONG dat o production
+#GEN_ENGINE_DEV_HOME=
+#GEN_ENGINE_BINARY_AGY=agy
+#GEN_ENGINE_IDLE_TIMEOUT=600
+#GEN_ENGINE_MAX_TURN_SECONDS=3600
+#GEN_ENGINE_RAW_KEEP=true
+#GEN_ENGINE_RAW_MAX_BYTES=2000000
+
 # Log configuration
 LOG_LEVEL=INFO
 ```

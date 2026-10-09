@@ -1,4 +1,4 @@
-from typing import Any, Optional, Protocol, BinaryIO
+from typing import Any, AsyncIterator, Dict, List, Optional, Protocol, BinaryIO
 from app.domain.models.tool_result import ToolResult
 from app.domain.external.browser import Browser
 
@@ -8,7 +8,7 @@ class Sandbox(Protocol):
     async def ensure_sandbox(self) -> None:
         """Ensure sandbox is ready"""
         ...
-    
+
     async def exec_command(
         self,
         session_id: str,
@@ -16,17 +16,54 @@ class Sandbox(Protocol):
         command: str
     ) -> ToolResult:
         """Execute command
-        
+
         Args:
             session_id: Session ID
             exec_dir: Execution directory
             command: Command to execute
-            
+
         Returns:
             Command execution result
         """
         ...
-    
+
+    # ------------------------------------------------------------------
+    # CLI engine (agy / Claude Code) — docs/spec/01-dong-co-cli.md,
+    # docs/design/dot-2-cli-engine.md muc 1.4. Goi xuong /api/v1/engine/*
+    # cua sandbox (muc 1.3).
+    # ------------------------------------------------------------------
+
+    async def engine_start(
+        self,
+        engine_id: str,
+        argv: List[str],
+        env: Dict[str, str],
+        cwd: str,
+    ) -> ToolResult:
+        """Khoi chay (hoac noi lai, idempotent) mot tien trinh CLI engine dai
+        trong sandbox. Tra `data={engine_id, pid, alive, started_at, reused}`."""
+        ...
+
+    async def engine_send(self, engine_id: str, line: str) -> ToolResult:
+        """Ghi mot dong NDJSON vao stdin cua tien trinh dong co."""
+        ...
+
+    def engine_events(
+        self, engine_id: str, from_seq: int = 0
+    ) -> AsyncIterator[Dict[str, Any]]:
+        """Luong SSE da parse: moi item la dict {seq, stream, ts, line,
+        truncated?}. Phat lai tu `from_seq+1` roi stream tiep."""
+        ...
+
+    async def engine_status(self, engine_id: str) -> ToolResult:
+        """Tra `data={alive, returncode, last_seq, started_at}`."""
+        ...
+
+    async def engine_stop(self, engine_id: str, signal: Optional[str] = None) -> ToolResult:
+        """Dung tien trinh dong co (terminate -> cho -> kill)."""
+        ...
+
+
     async def view_shell(self, session_id: str, console: bool = False) -> ToolResult:
         """View shell status
         

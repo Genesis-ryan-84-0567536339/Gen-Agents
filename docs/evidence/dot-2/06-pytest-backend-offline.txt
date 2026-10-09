@@ -1,0 +1,414 @@
+[1m============================= test session starts ==============================[0m
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend
+configfile: pytest.ini
+testpaths: tests
+plugins: langsmith-0.12.2, mock-3.15.1, asyncio-1.4.0, anyio-4.12.1, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+
+[1m----------------------------- live log collection ------------------------------[0m
+2026-10-09 20:18:45 _client.py:1025 [[32mINFO[0m]: HTTP Request: GET http://localhost:8090/mock/scenario "HTTP/1.1 200 OK"
+2026-10-09 20:18:45 _client.py:1025 [[32mINFO[0m]: HTTP Request: PUT http://localhost:8000/api/v1/sessions "HTTP/1.1 200 OK"
+collected 246 items / 2 deselected / 244 selected
+
+tests/test_agy_adapter.py::TestStripMcpPrefix::test_strips_sandbox_prefix_variants [32mPASSED[0m[32m [  0%][0m
+tests/test_agy_adapter.py::TestStripMcpPrefix::test_passthrough_when_no_prefix [32mPASSED[0m[33m [  0%][0m
+tests/test_agy_adapter.py::TestClassifyError::test_auth_failed_sample_classified_as_chua_dang_nhap [32mPASSED[0m[33m [  1%][0m
+tests/test_agy_adapter.py::TestClassifyError::test_quota [32mPASSED[0m[33m          [  1%][0m
+tests/test_agy_adapter.py::TestClassifyError::test_timeout_alone [32mPASSED[0m[33m  [  2%][0m
+tests/test_agy_adapter.py::TestClassifyError::test_unknown_falls_back_to_khac [32mPASSED[0m[33m [  2%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_full_fixture_translates_without_crashing 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  2%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_init_sets_conversation_ref 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  3%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_normal_tool_call_and_result_paired_by_id 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  3%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_progress_tools_do_not_emit_tool_result 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  4%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_result_success_emits_usage_then_done 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  4%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_result_error_emits_error_event_classified 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  4%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_seq_is_monotonically_non_decreasing 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  5%][0m
+tests/test_agy_adapter.py::TestAgyTranslateFromFixture::test_from_seq_resumes_without_replaying_earlier_lines 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 agy_engine.py:106 [[32mINFO[0m]: engine s1 khoi chay (reused=False, pid=123)
+[32mPASSED[0m[33m                                                                   [  5%][0m
+tests/test_agy_adapter.py::TestAgyBuildArgvAndUserLine::test_build_argv_includes_model_effort_and_conversation [32mPASSED[0m[33m [  6%][0m
+tests/test_agy_adapter.py::TestAgyBuildArgvAndUserLine::test_build_argv_omits_conversation_when_absent [32mPASSED[0m[33m [  6%][0m
+tests/test_agy_adapter.py::TestAgyBuildArgvAndUserLine::test_build_user_line_is_valid_ndjson_event_user [32mPASSED[0m[33m [  6%][0m
+tests/test_agy_adapter.py::TestAgyBuildArgvAndUserLine::test_build_user_line_appends_attachment_note [32mPASSED[0m[33m [  7%][0m
+tests/test_cli_engine_flow.py::TestToolGroupAndErrorFormatting::test_tool_group_shell_file_browser_mcp [32mPASSED[0m[33m [  7%][0m
+tests/test_cli_engine_flow.py::TestToolGroupAndErrorFormatting::test_format_error_message_known_codes [32mPASSED[0m[33m [  8%][0m
+tests/test_cli_engine_flow.py::TestToolGroupAndErrorFormatting::test_format_error_message_unknown_code_includes_trimmed_text [32mPASSED[0m[33m [  8%][0m
+tests/test_cli_engine_flow.py::TestInitAndTitle::test_init_emits_title_when_session_has_no_title [32mPASSED[0m[33m [  9%][0m
+tests/test_cli_engine_flow.py::TestInitAndTitle::test_init_does_not_emit_title_when_session_already_has_one [32mPASSED[0m[33m [  9%][0m
+tests/test_cli_engine_flow.py::TestTextDeltaBuffering::test_text_deltas_are_gommed_into_one_message_event [32mPASSED[0m[33m [  9%][0m
+tests/test_cli_engine_flow.py::TestTextDeltaBuffering::test_done_with_empty_buffer_uses_result_response_fallback [32mPASSED[0m[33m [ 10%][0m
+tests/test_cli_engine_flow.py::TestToolEvents::test_tool_call_and_result_map_to_tool_event_pair [32mPASSED[0m[33m [ 10%][0m
+tests/test_cli_engine_flow.py::TestToolEvents::test_tool_result_carries_forward_call_args_for_file_and_shell [32mPASSED[0m[33m [ 11%][0m
+tests/test_cli_engine_flow.py::TestToolEvents::test_shell_tool_mapped_to_shell_group [32mPASSED[0m[33m [ 11%][0m
+tests/test_cli_engine_flow.py::TestPlanEvents::test_first_plan_update_emits_created_then_step_started [32mPASSED[0m[33m [ 11%][0m
+tests/test_cli_engine_flow.py::TestPlanEvents::test_second_plan_update_emits_updated_and_completed_step [32mPASSED[0m[33m [ 12%][0m
+tests/test_cli_engine_flow.py::TestPlanEvents::test_done_emits_plan_completed_when_plan_exists [32mPASSED[0m[33m [ 12%][0m
+tests/test_cli_engine_flow.py::TestAskUserWaitAndResume::test_ask_user_emits_message_then_wait_and_is_done_false [32mPASSED[0m[33m [ 13%][0m
+tests/test_cli_engine_flow.py::TestAskUserWaitAndResume::test_resume_from_waiting_continues_with_same_conversation_ref [32mPASSED[0m[33m [ 13%][0m
+tests/test_cli_engine_flow.py::TestAskUserWaitAndResume::test_resume_replays_only_events_after_engine_last_seq [32mPASSED[0m[33m [ 13%][0m
+tests/test_cli_engine_flow.py::TestErrorHandling::test_result_error_emits_vietnamese_error_event [32mPASSED[0m[33m [ 14%][0m
+tests/test_cli_engine_flow.py::TestEngineCursorPersistence::test_engine_last_seq_updated_after_each_event [32mPASSED[0m[33m [ 14%][0m
+tests/test_cli_engine_flow.py::TestRestartAfterProcessDeath::test_resume_with_dead_process_and_no_conversation_ref_warns_user [32mPASSED[0m[33m [ 15%][0m
+tests/test_cli_engine_flow.py::TestRestartAfterProcessDeath::test_fresh_session_first_turn_does_not_warn_even_if_not_reused [32mPASSED[0m[33m [ 15%][0m
+tests/test_cli_engine_flow.py::TestIdleWatchdog::test_idle_timeout_with_dead_process_emits_tien_trinh_chet_error [32mPASSED[0m[33m [ 15%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_one_turn_opens_one_engine_run_with_all_lines [32mPASSED[0m[33m [ 16%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_two_turns_in_separate_sessions_open_two_runs_with_turn_index_1_and_2 [32mPASSED[0m[33m [ 16%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_wait_event_closes_turn_with_waiting_status [32mPASSED[0m[33m [ 17%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_wait_event_closes_turn_correctly_even_when_consumer_stops_right_after_it [32mPASSED[0m[33m [ 17%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_error_event_closes_turn_with_error_status [32mPASSED[0m[33m [ 18%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_raw_keep_false_disables_recording_but_repository_still_opens_turn [32mPASSED[0m[33m [ 18%][0m
+tests/test_cli_engine_raw_persistence.py::TestRawLinePersistence::test_no_repository_configured_does_not_crash [32mPASSED[0m[33m [ 18%][0m
+tests/test_cli_engine_raw_persistence.py::TestConversationRefPersistence::test_init_conversation_ref_is_written_to_session_repository [32mPASSED[0m[33m [ 19%][0m
+tests/test_cli_engine_raw_persistence.py::TestUsagePersistence::test_usage_event_persists_to_session_repository_once_at_turn_end [32mPASSED[0m[33m [ 19%][0m
+tests/test_cli_engine_raw_persistence.py::TestUsagePersistence::test_no_usage_event_means_no_usage_call [32mPASSED[0m[33m [ 20%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_core_prompt_always_present [32mPASSED[0m[33m [ 20%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_bound_toolkit_contributes_section [32mPASSED[0m[33m [ 20%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_toolkit_without_instructions_adds_no_section [32mPASSED[0m[33m [ 21%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_role_prompt_appended [32mPASSED[0m[33m [ 21%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_project_instruction_section [32mPASSED[0m[33m [ 22%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_blank_project_instruction_omitted [32mPASSED[0m[33m [ 22%][0m
+tests/test_context_engineering.py::TestSystemPromptBuilder::test_describe_toolkits_compact_overview [32mPASSED[0m[33m [ 22%][0m
+tests/test_context_engineering.py::TestOutputTool::test_schema_shape [32mPASSED[0m[33m [ 23%][0m
+tests/test_context_engineering.py::TestOutputTool::test_validate_success_and_failure [32mPASSED[0m[33m [ 23%][0m
+tests/test_context_engineering.py::TestMemoryCompaction::test_estimate_tokens_counts_content_and_calls [32mPASSED[0m[33m [ 24%][0m
+tests/test_context_engineering.py::TestMemoryCompaction::test_unconditional_compact_elides_old_tool_results [32mPASSED[0m[33m [ 24%][0m
+tests/test_context_engineering.py::TestMemoryCompaction::test_budgeted_compact_stops_at_budget [32mPASSED[0m[33m [ 25%][0m
+tests/test_context_engineering.py::TestMemoryCompaction::test_compact_preserves_message_skeleton [32mPASSED[0m[33m [ 25%][0m
+tests/test_context_engineering.py::TestAgentLoopStructuredOutput::test_output_tool_call_yields_structured_output [32mPASSED[0m[33m [ 25%][0m
+tests/test_context_engineering.py::TestAgentLoopStructuredOutput::test_invalid_output_args_trigger_self_repair 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:48 base.py:175 [[33mWARNING[0m]: Structured output validation failed for complete_step: 1 validation error for StepReport
+result
+  Field required [type=missing, input_value={'success': True}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing
+[32mPASSED[0m[33m                                                                   [ 26%][0m
+tests/test_context_engineering.py::TestAgentLoopStructuredOutput::test_plain_message_is_nudged_to_output_tool [32mPASSED[0m[33m [ 26%][0m
+tests/test_context_engineering.py::TestAgentLoopStructuredOutput::test_regular_tools_still_execute [32mPASSED[0m[33m [ 27%][0m
+tests/test_context_engineering.py::TestAgentLoopStructuredOutput::test_unknown_tool_gets_error_response [32mPASSED[0m[33m [ 27%][0m
+tests/test_context_engineering.py::TestToolResultTruncation::test_oversized_tool_result_truncated [32mPASSED[0m[33m [ 27%][0m
+tests/test_context_engineering.py::TestDynamicMcpTools::test_mcp_schemas_become_invocable_tools [32mPASSED[0m[33m [ 28%][0m
+tests/test_domain_tools.py::TestToolSchema::test_toolkit_collects_tools [32mPASSED[0m[33m [ 28%][0m
+tests/test_domain_tools.py::TestToolSchema::test_openai_schema_shape [32mPASSED[0m[33m [ 29%][0m
+tests/test_domain_tools.py::TestToolSchema::test_openai_schema_includes_brief [32mPASSED[0m[33m [ 29%][0m
+tests/test_domain_tools.py::TestToolSchema::test_parameter_descriptions_from_docstring [32mPASSED[0m[33m [ 29%][0m
+tests/test_domain_tools.py::TestToolSchema::test_required_vs_optional [32mPASSED[0m[33m [ 30%][0m
+tests/test_domain_tools.py::TestToolSchema::test_no_pydantic_title_leakage [32mPASSED[0m[33m [ 30%][0m
+tests/test_domain_tools.py::TestToolLookupAndInvoke::test_get_tool [32mPASSED[0m[33m [ 31%][0m
+tests/test_domain_tools.py::TestToolLookupAndInvoke::test_invoke_binds_toolkit_and_returns_result [32mPASSED[0m[33m [ 31%][0m
+tests/test_domain_tools.py::TestToolLookupAndInvoke::test_invoke_strips_brief_before_calling_impl [32mPASSED[0m[33m [ 31%][0m
+tests/test_domain_tools.py::TestToolLookupAndInvoke::test_tool_carries_toolkit_reference [32mPASSED[0m[33m [ 32%][0m
+tests/test_domain_tools.py::TestToolLookupAndInvoke::test_decorated_method_stays_callable [32mPASSED[0m[33m [ 32%][0m
+tests/test_domain_tools.py::TestDecoratorDocs::test_parameter_descriptions_from_decorator [32mPASSED[0m[33m [ 33%][0m
+tests/test_domain_tools.py::TestDecoratorDocs::test_decorator_description_ignores_docstring [32mPASSED[0m[33m [ 33%][0m
+tests/test_domain_tools.py::TestDecoratorDocs::test_positional_description [32mPASSED[0m[33m [ 34%][0m
+tests/test_domain_tools.py::TestDecoratorDocs::test_explicit_parameters_schema [32mPASSED[0m[33m [ 34%][0m
+tests/test_domain_tools.py::TestDecoratorDocs::test_param_docs_must_use_args [32mPASSED[0m[33m [ 34%][0m
+tests/test_domain_tools.py::TestDecoratorDocs::test_shell_toolkit_uses_decorator_docs [32mPASSED[0m[33m [ 35%][0m
+tests/test_domain_tools.py::TestTakeBrief::test_take_brief_splits_ui_label [32mPASSED[0m[33m [ 35%][0m
+tests/test_domain_tools.py::TestTakeBrief::test_take_brief_missing [32mPASSED[0m[33m [ 36%][0m
+tests/test_execution_context.py::test_format_prior_steps_lists_finished_steps_only [32mPASSED[0m[33m [ 36%][0m
+tests/test_execution_context.py::test_format_prior_steps_empty_when_first [32mPASSED[0m[33m [ 36%][0m
+tests/test_execution_context.py::test_build_execution_request_includes_goal_and_prior [32mPASSED[0m[33m [ 37%][0m
+tests/test_execution_context.py::test_can_skip_summarize_always_false [32mPASSED[0m[33m [ 37%][0m
+tests/test_execution_context.py::test_resume_prompt_mentions_continue_without_reasking [32mPASSED[0m[33m [ 38%][0m
+tests/test_llm_gateway.py::TestToLangChain::test_all_roles_converted [32mPASSED[0m[33m [ 38%][0m
+tests/test_llm_gateway.py::TestFromLangChain::test_ai_message_with_tool_calls [32mPASSED[0m[33m [ 38%][0m
+tests/test_llm_gateway.py::TestFromLangChain::test_plain_ai_message [32mPASSED[0m[33m [ 39%][0m
+tests/test_llm_gateway.py::TestRoundTrip::test_domain_to_lc_to_domain_preserves_tool_calls [32mPASSED[0m[33m [ 39%][0m
+tests/test_llm_gateway.py::TestOrcaRouterProvider::test_orcarouter_defaults_to_orca_base_url [32mPASSED[0m[33m [ 40%][0m
+tests/test_llm_gateway.py::TestOrcaRouterProvider::test_orcarouter_respects_explicit_api_base [32mPASSED[0m[33m [ 40%][0m
+tests/test_llm_message.py::TestLLMMessageNative::test_convenience_constructors [32mPASSED[0m[33m [ 40%][0m
+tests/test_llm_message.py::TestLLMMessageNative::test_content_none_becomes_empty [32mPASSED[0m[33m [ 41%][0m
+tests/test_llm_message.py::TestLLMMessageNative::test_artifact_excluded_from_dump [32mPASSED[0m[33m [ 41%][0m
+tests/test_llm_message.py::TestLLMMessageNative::test_toolcall_native_shape [32mPASSED[0m[33m [ 42%][0m
+tests/test_llm_message.py::TestMemoryOperations::test_empty [32mPASSED[0m[33m       [ 42%][0m
+tests/test_llm_message.py::TestMemoryOperations::test_roll_back [32mPASSED[0m[33m   [ 43%][0m
+tests/test_llm_message.py::TestMemoryOperations::test_compact_elides_old_tool_output [32mPASSED[0m[33m [ 43%][0m
+tests/test_llm_message.py::TestMemoryOperations::test_compact_keeps_recent_tool_output [32mPASSED[0m[33m [ 43%][0m
+tests/test_memory_serialization.py::TestLegacyOpenAIFormat::test_openai_tool_call_and_tool_message [32mPASSED[0m[33m [ 44%][0m
+tests/test_memory_serialization.py::TestLegacyOpenAIFormat::test_invalid_string_args_default_empty [32mPASSED[0m[33m [ 44%][0m
+tests/test_memory_serialization.py::TestLegacyLangChainFormat::test_type_discriminator_mapped_to_role [32mPASSED[0m[33m [ 45%][0m
+tests/test_memory_serialization.py::TestLegacyLangChainFormat::test_human_maps_to_user [32mPASSED[0m[33m [ 45%][0m
+tests/test_memory_serialization.py::TestNativeAndRoundTrip::test_empty_and_none [32mPASSED[0m[33m [ 45%][0m
+tests/test_memory_serialization.py::TestNativeAndRoundTrip::test_native_round_trip [32mPASSED[0m[33m [ 46%][0m
+tests/test_openai_gateway.py::TestToOpenAI::test_all_roles_converted [32mPASSED[0m[33m [ 46%][0m
+tests/test_openai_gateway.py::TestFromOpenAI::test_message_with_tool_calls [32mPASSED[0m[33m [ 47%][0m
+tests/test_openai_gateway.py::TestFromOpenAI::test_plain_message [32mPASSED[0m[33m  [ 47%][0m
+tests/test_openai_gateway.py::TestFromOpenAI::test_none_content_becomes_empty_string [32mPASSED[0m[33m [ 47%][0m
+tests/test_openai_gateway.py::TestFromOpenAI::test_empty_arguments_become_empty_dict [32mPASSED[0m[33m [ 48%][0m
+tests/test_openai_gateway.py::TestFromOpenAI::test_markdown_fenced_arguments_repaired [32mPASSED[0m[33m [ 48%][0m
+tests/test_openai_gateway.py::TestFromOpenAI::test_unparseable_arguments_raise [32mPASSED[0m[33m [ 49%][0m
+tests/test_openai_gateway.py::TestRoundTrip::test_domain_to_openai_to_domain_preserves_tool_calls [32mPASSED[0m[33m [ 49%][0m
+tests/test_openai_gateway.py::TestExtractJsonObject::test_plain [32mPASSED[0m[33m   [ 50%][0m
+tests/test_openai_gateway.py::TestExtractJsonObject::test_markdown_fence [32mPASSED[0m[33m [ 50%][0m
+tests/test_openai_gateway.py::TestExtractJsonObject::test_surrounding_text [32mPASSED[0m[33m [ 50%][0m
+tests/test_openai_gateway.py::TestExtractJsonObject::test_not_json [32mPASSED[0m[33m [ 51%][0m
+tests/test_openai_gateway.py::TestExtractJsonObject::test_none [32mPASSED[0m[33m    [ 51%][0m
+tests/test_openai_gateway.py::TestParseJsonLocal::test_local_extraction_no_network [32mPASSED[0m[33m [ 52%][0m
+tests/test_plan_act_flow.py::test_plan_act_one_step_then_summarize 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Do the work
+[32mPASSED[0m[33m                                                                   [ 52%][0m
+tests/test_plan_act_flow.py::test_plan_act_rejects_success_complete_step_without_work_tools 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Work
+2026-10-09 20:18:49 execution.py:122 [[32mINFO[0m]: Rejecting complete_step(success=true) with no work tools yet
+[32mPASSED[0m[33m                                                                   [ 52%][0m
+tests/test_plan_act_flow.py::test_plan_act_two_success_steps_skip_update_plan 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Two
+[32mPASSED[0m[33m                                                                   [ 53%][0m
+tests/test_plan_act_flow.py::test_plan_act_failed_step_triggers_update_plan 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Try
+2026-10-09 20:18:49 plan_act.py:259 [[32mINFO[0m]: Agent agent-1 step 1 needs replan (status=ExecutionStatus.COMPLETED success=False)
+[32mPASSED[0m[33m                                                                   [ 53%][0m
+tests/test_plan_act_flow.py::test_plan_act_wait_does_not_emit_done 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Choose
+[32mPASSED[0m[33m                                                                   [ 54%][0m
+tests/test_plan_act_flow.py::test_step_needs_replan_helper [32mPASSED[0m[33m        [ 54%][0m
+tests/test_plan_act_prompts.py::test_file_instructions_do_not_mention_plan_report_or_replan [32mPASSED[0m[33m [ 54%][0m
+tests/test_plan_act_prompts.py::test_message_instructions_align_step_and_final_exits [32mPASSED[0m[33m [ 55%][0m
+tests/test_plan_act_prompts.py::test_planner_role_balances_lean_plans_with_multi_phase_splits [32mPASSED[0m[33m [ 55%][0m
+tests/test_plan_act_prompts.py::test_execution_role_requires_verification_before_complete [32mPASSED[0m[33m [ 56%][0m
+tests/test_plan_progress.py::test_mark_first_step_running [32mPASSED[0m[33m         [ 56%][0m
+tests/test_plan_progress.py::test_apply_plan_report_updates_and_emits_step_events [32mPASSED[0m[33m [ 56%][0m
+tests/test_plan_progress.py::test_apply_plan_report_enforces_single_running [32mPASSED[0m[33m [ 57%][0m
+tests/test_plan_progress.py::test_apply_plan_report_replaces_existing_unreported_running_step [32mPASSED[0m[33m [ 57%][0m
+tests/test_plan_progress.py::test_complete_plan_marks_open_steps_done [32mPASSED[0m[33m [ 58%][0m
+tests/test_plan_progress.py::test_step_started_events_for_running_steps [32mPASSED[0m[33m [ 58%][0m
+tests/test_plan_progress.py::test_is_plan_finished [32mPASSED[0m[33m                [ 59%][0m
+tests/test_plan_progress.py::test_complete_plan_events_emits_completed_for_running_step [32mPASSED[0m[33m [ 59%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_create_plan_then_manus_deliver 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Do the work
+[32mPASSED[0m[33m                                                                   [ 59%][0m
+tests/test_single_loop_manus.py::test_agent_loop_blocks_work_tools_after_plan_finished 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Do the work
+[32mPASSED[0m[33m                                                                   [ 60%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_empty_plan_skips_manus 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Direct answer
+[32mPASSED[0m[33m                                                                   [ 60%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_replan_is_intercepted_and_uses_planner 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Investigate
+[32mPASSED[0m[33m                                                                   [ 61%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_invalid_plan_report_allows_model_repair 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Repair report
+2026-10-09 20:18:49 base.py:153 [[1m[31mERROR[0m]: Tool execution failed, plan_report, {'steps': [{'id': '1', 'status': 'not-a-status'}]}
+Traceback (most recent call last):
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/agents/base.py", line 135, in invoke_tool
+    raw_result = await tool.invoke(tool_call.args)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/tools/base.py", line 308, in invoke
+    return await self._invoker(clean)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/tools/base.py", line 277, in invoker
+    return await tool_function.func(toolkit, **(args or {}))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/tools/plan.py", line 37, in plan_report
+    parsed = PlanReportOutput.model_validate(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/.venv/lib/python3.12/site-packages/pydantic/main.py", line 732, in model_validate
+    return cls.__pydantic_validator__.validate_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for PlanReportOutput
+steps.0.status
+  Input should be 'pending', 'running', 'completed' or 'failed' [type=enum, input_value='not-a-status', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/enum
+[32mPASSED[0m[33m                                                                   [ 61%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_invalid_replan_allows_model_repair 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Repair replan
+2026-10-09 20:18:49 base.py:153 [[1m[31mERROR[0m]: Tool execution failed, replan, {'reason': ''}
+Traceback (most recent call last):
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/agents/base.py", line 135, in invoke_tool
+    raw_result = await tool.invoke(tool_call.args)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/tools/base.py", line 308, in invoke
+    return await self._invoker(clean)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/tools/base.py", line 277, in invoker
+    return await tool_function.func(toolkit, **(args or {}))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/app/domain/services/tools/plan.py", line 56, in replan
+    parsed = ReplanOutput.model_validate({"reason": reason})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/.venv/lib/python3.12/site-packages/pydantic/main.py", line 732, in model_validate
+    return cls.__pydantic_validator__.validate_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplanOutput
+reason
+  String should have at least 1 character [type=string_too_short, input_value='', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/string_too_short
+[32mPASSED[0m[33m                                                                   [ 61%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_replan_after_all_steps_completed_keeps_new_steps 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Extend work
+[32mPASSED[0m[33m                                                                   [ 62%][0m
+tests/test_single_loop_manus.py::test_agent_loop_flow_wait_does_not_emit_done 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:49 planner.py:86 [[32mINFO[0m]: Planner created plan: Choose
+[32mPASSED[0m[33m                                                                   [ 62%][0m
+tests/test_single_loop_manus.py::test_agent_loop_waiting_resume_skips_create_plan [32mPASSED[0m[33m [ 63%][0m
+tests/test_single_loop_manus.py::test_continue_execute_does_not_append_user_message [32mPASSED[0m[33m [ 63%][0m
+tests/test_single_loop_manus.py::test_manus_run_todo_md_does_not_emit_plan [32mPASSED[0m[33m [ 63%][0m
+tests/test_single_loop_manus.py::test_manus_ask_user_yields_wait_and_stops [32mPASSED[0m[33m [ 64%][0m
+tests/test_single_loop_manus.py::test_manus_emits_fallback_title_when_delivering_without_todos [32mPASSED[0m[33m [ 64%][0m
+tests/test_single_loop_manus.py::test_manus_plan_report_yields_tool_event_after_notify [32mPASSED[0m[33m [ 65%][0m
+tests/test_single_loop_manus.py::test_manus_blocks_plan_report_until_notify [32mPASSED[0m[33m [ 65%][0m
+tests/test_single_loop_manus.py::test_manus_blocks_work_tools_until_notify [32mPASSED[0m[33m [ 65%][0m
+tests/test_single_loop_manus.py::test_manus_notify_surfaces_as_message_event [32mPASSED[0m[33m [ 66%][0m
+tests/test_skill_archive.py::test_read_skill_md_at_root [32mPASSED[0m[33m           [ 66%][0m
+tests/test_skill_archive.py::test_read_skill_md_single_top_folder [32mPASSED[0m[33m [ 67%][0m
+tests/test_skill_archive.py::test_iter_package_files_strips_top_folder_and_includes_scripts [32mPASSED[0m[33m [ 67%][0m
+tests/test_skill_archive.py::test_zip_slip_rejected [32mPASSED[0m[33m               [ 68%][0m
+tests/test_skill_archive.py::test_zip_slip_rejected_directory_member [32mPASSED[0m[33m [ 68%][0m
+tests/test_skill_archive.py::test_unique_nested_skill_md_accepted [32mPASSED[0m[33m [ 68%][0m
+tests/test_skill_archive.py::test_macos_metadata_ignored_when_resolving_root [32mPASSED[0m[33m [ 69%][0m
+tests/test_skill_archive.py::test_multiple_skill_md_rejected [32mPASSED[0m[33m      [ 69%][0m
+tests/test_skill_archive.py::test_size_cap [32mPASSED[0m[33m                        [ 70%][0m
+tests/test_skill_archive.py::test_uncompressed_package_size_cap_applies_to_reads [32mPASSED[0m[33m [ 70%][0m
+tests/test_skill_archive.py::test_uncompressed_package_size_cap_is_aggregate [32mPASSED[0m[33m [ 70%][0m
+tests/test_skill_archive.py::test_normalize_md_to_zip [32mPASSED[0m[33m             [ 71%][0m
+tests/test_skill_github.py::test_parse_github_repo_url [32mPASSED[0m[33m            [ 71%][0m
+tests/test_skill_github.py::test_parse_rejects_non_repository_github_urls[https://gitlab.com/acme/my-skill] [32mPASSED[0m[33m [ 72%][0m
+tests/test_skill_github.py::test_parse_rejects_non_repository_github_urls[https://github.com/acme] [32mPASSED[0m[33m [ 72%][0m
+tests/test_skill_github.py::test_parse_rejects_non_repository_github_urls[https://github.com:not-a-port/acme/my-skill] [32mPASSED[0m[33m [ 72%][0m
+tests/test_skill_github.py::test_parse_rejects_non_repository_github_urls[ftp://github.com/acme/my-skill] [32mPASSED[0m[33m [ 73%][0m
+tests/test_skill_github.py::test_parse_wraps_malformed_url_error [32mPASSED[0m[33m  [ 73%][0m
+tests/test_skill_github.py::test_extract_subdir_from_github_zip [32mPASSED[0m[33m   [ 74%][0m
+tests/test_skill_github.py::test_extract_subdir_requires_skill_md [32mPASSED[0m[33m [ 74%][0m
+tests/test_skill_github.py::test_fetch_tries_main_then_master [32mPASSED[0m[33m     [ 75%][0m
+tests/test_skill_github.py::test_fetch_rejects_when_main_and_master_are_unavailable [32mPASSED[0m[33m [ 75%][0m
+tests/test_skill_github.py::test_fetch_tries_master_after_main_http_error [32mPASSED[0m[33m [ 75%][0m
+tests/test_skill_github.py::test_fetch_rejects_when_both_branches_raise_http_error [32mPASSED[0m[33m [ 76%][0m
+tests/test_skill_github.py::test_fetch_aborts_stream_over_package_size_cap [32mPASSED[0m[33m [ 76%][0m
+tests/test_skill_github.py::test_import_from_github_fetches_then_ingests [32mPASSED[0m[33m [ 77%][0m
+tests/test_skill_github.py::test_import_from_github_slices_subdirectory [32mPASSED[0m[33m [ 77%][0m
+tests/test_skill_import_github_e2e.py::test_import_skill_from_github_live [32mPASSED[0m[33m [ 77%][0m
+tests/test_skill_import_github_e2e.py::test_import_skill_from_github_rejects_invalid_url [32mPASSED[0m[33m [ 78%][0m
+tests/test_skill_invocation.py::test_parse_skill_invocation_with_task [32mPASSED[0m[33m [ 78%][0m
+tests/test_skill_invocation.py::test_parse_skill_invocation_name_only [32mPASSED[0m[33m [ 79%][0m
+tests/test_skill_invocation.py::test_parse_skill_invocation_ignores_non_skill_text [32mPASSED[0m[33m [ 79%][0m
+tests/test_skill_invocation.py::test_format_skill_context_requires_load_skill [32mPASSED[0m[33m [ 79%][0m
+tests/test_skill_invocation.py::test_format_skill_planner_context_omits_body_requires_load_step [32mPASSED[0m[33m [ 80%][0m
+tests/test_skill_loader.py::test_parse_skill_md_reads_frontmatter_and_body [32mPASSED[0m[33m [ 80%][0m
+tests/test_skill_loader.py::test_extract_skill_md_from_zip [32mPASSED[0m[33m        [ 81%][0m
+tests/test_skill_loader.py::test_resolve_skill_body_prefers_official_catalog_body [32mPASSED[0m[33m [ 81%][0m
+tests/test_skill_loader.py::test_import_from_upload_parses_skill_md [32mPASSED[0m[33m [ 81%][0m
+tests/test_skill_model_package_fields.py::test_skill_accepts_package_fields [32mPASSED[0m[33m [ 82%][0m
+tests/test_skill_official_packages.py::test_official_packages_expose_index_metadata[skill-creator-Build a reusable skill together with Manus] [32mPASSED[0m[33m [ 82%][0m
+tests/test_skill_official_packages.py::test_official_packages_expose_index_metadata[market-research-Research markets and competitors into a structured brief] [32mPASSED[0m[33m [ 83%][0m
+tests/test_skill_official_packages.py::test_official_packages_expose_index_metadata[slides-Turn an outline into presentation slides] [32mPASSED[0m[33m [ 83%][0m
+tests/test_skill_official_packages.py::test_official_packages_expose_index_metadata[web-research-Search the web and synthesize findings with citations] [32mPASSED[0m[33m [ 84%][0m
+tests/test_skill_official_packages.py::test_official_packages_expose_index_metadata[summarize-Summarize long documents into concise takeaways] [32mPASSED[0m[33m [ 84%][0m
+tests/test_skill_official_packages.py::test_unknown_official_package_is_not_resolved [32mPASSED[0m[33m [ 84%][0m
+tests/test_skill_official_packages.py::test_resolve_body_from_official_package [32mPASSED[0m[33m [ 85%][0m
+tests/test_skill_package_ingest.py::test_ingest_stores_full_package [32mPASSED[0m[33m [ 85%][0m
+tests/test_skill_package_ingest.py::test_ingest_rejects_invalid_zip_as_bad_request [32mPASSED[0m[33m [ 86%][0m
+tests/test_skill_package_ingest.py::test_ingest_rejects_aggregate_uncompressed_package_over_cap [32mPASSED[0m[33m [ 86%][0m
+tests/test_skill_plan_steps.py::test_skill_read_step_description_zh [32mPASSED[0m[33m [ 86%][0m
+tests/test_skill_plan_steps.py::test_skill_read_step_description_en_default [32mPASSED[0m[33m [ 87%][0m
+tests/test_skill_plan_steps.py::test_skill_read_step_description_zh_cn_alias [32mPASSED[0m[33m [ 87%][0m
+tests/test_skill_plan_steps.py::test_ensure_skill_read_first_step_uses_plan_language [32mPASSED[0m[33m [ 88%][0m
+tests/test_skill_plan_steps.py::test_ensure_skill_read_first_step_english_when_plan_en [32mPASSED[0m[33m [ 88%][0m
+tests/test_skill_plan_steps.py::test_ensure_skill_read_first_step_idempotent_when_already_first [32mPASSED[0m[33m [ 88%][0m
+tests/test_skill_plan_steps.py::test_ensure_skill_read_first_step_detects_loose_skill_md_wording [32mPASSED[0m[33m [ 89%][0m
+tests/test_skill_plan_steps.py::test_ensure_skill_read_first_step_noop_without_name [32mPASSED[0m[33m [ 89%][0m
+tests/test_skill_runtime_service.py::test_build_skill_catalog_section_lists_enabled_skills 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-1
+[32mPASSED[0m[33m                                                                   [ 90%][0m
+tests/test_skill_runtime_service.py::test_resolve_message_uses_required_skills_structured 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-1
+[32mPASSED[0m[33m                                                                   [ 90%][0m
+tests/test_skill_runtime_service.py::test_resolve_message_plain_text_does_not_auto_match_skill 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-1
+[32mPASSED[0m[33m                                                                   [ 90%][0m
+tests/test_skill_runtime_service.py::test_resolve_message_ignores_disabled_skill 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-1
+2026-10-09 20:18:51 skill_runtime_service.py:239 [[32mINFO[0m]: Ignoring skill invocation /market-research for user user-1 (not added or disabled)
+[32mPASSED[0m[33m                                                                   [ 91%][0m
+tests/test_skill_sandbox_sync.py::test_skill_paths [32mPASSED[0m[33m                [ 91%][0m
+tests/test_skill_sandbox_sync.py::test_build_skill_md_file_includes_frontmatter_and_body [32mPASSED[0m[33m [ 92%][0m
+tests/test_skill_sandbox_sync.py::test_format_skill_catalog_mentions_sandbox_path [32mPASSED[0m[33m [ 92%][0m
+tests/test_skill_sandbox_sync.py::test_format_skill_context_requires_load_skill [32mPASSED[0m[33m [ 93%][0m
+tests/test_skill_sandbox_sync.py::test_sync_writes_skill_md_and_script 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_runtime_service.py:71 [[32mINFO[0m]: Synced 1 skill package(s) to sandbox for user user-1
+[32mPASSED[0m[33m                                                                   [ 93%][0m
+tests/test_skill_sandbox_sync.py::test_sync_skips_binary_file_and_writes_remaining_utf8_files 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_runtime_service.py:162 [[33mWARNING[0m]: Skipping non-UTF-8 skill file /binary-demo at sandbox path /home/ubuntu/skills/binary-demo/assets/x.bin
+2026-10-09 20:18:51 skill_runtime_service.py:71 [[32mINFO[0m]: Synced 1 skill package(s) to sandbox for user user-1
+[32mPASSED[0m[33m                                                                   [ 93%][0m
+tests/test_skill_sandbox_sync.py::test_sync_enabled_skills_to_sandbox_writes_skill_md 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-1
+2026-10-09 20:18:51 skill_runtime_service.py:71 [[32mINFO[0m]: Synced 6 skill package(s) to sandbox for user user-1
+[32mPASSED[0m[33m                                                                   [ 94%][0m
+tests/test_skill_sandbox_sync.py::test_sync_clears_enabled_skill_and_removes_stale_skill_directories 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-1
+2026-10-09 20:18:51 skill_runtime_service.py:71 [[32mINFO[0m]: Synced 6 skill package(s) to sandbox for user user-1
+[32mPASSED[0m[33m                                                                   [ 94%][0m
+tests/test_skill_service.py::test_import_from_github_creates_personal_skill [32mPASSED[0m[33m [ 95%][0m
+tests/test_skill_service.py::test_ensure_defaults_seeds_official_and_personal_skills 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:51 skill_service.py:206 [[32mINFO[0m]: Seeded default skills for user user-2
+[32mPASSED[0m[33m                                                                   [ 95%][0m
+tests/test_skill_toolkit.py::test_load_skill_returns_body_and_file_path [32mPASSED[0m[33m [ 95%][0m
+tests/test_skill_toolkit.py::test_load_skill_rejects_unknown_name [32mPASSED[0m[33m [ 96%][0m
+tests/test_skill_toolkit.py::test_load_skill_schema_embeds_available_skills_catalog [32mPASSED[0m[33m [ 96%][0m
+tests/test_todo_projection.py::test_todos_to_plan_maps_statuses [32mPASSED[0m[33m   [ 97%][0m
+tests/test_todo_projection.py::test_first_todo_write_emits_created_plan [32mPASSED[0m[33m [ 97%][0m
+tests/test_todo_projection.py::test_subsequent_todo_write_emits_updated_and_step_transitions [32mPASSED[0m[33m [ 97%][0m
+tests/test_ws_final_agent_status.py::test_saw_wait_wins_over_stale_running_session [32mPASSED[0m[33m [ 98%][0m
+tests/test_ws_final_agent_status.py::test_saw_wait_wins_over_saw_error [32mPASSED[0m[33m [ 98%][0m
+tests/test_ws_final_agent_status.py::test_mongo_waiting_without_saw_wait [32mPASSED[0m[33m [ 99%][0m
+tests/test_ws_final_agent_status.py::test_saw_error_when_not_waiting [32mPASSED[0m[33m [ 99%][0m
+tests/test_ws_final_agent_status.py::test_completed_when_clean [32mPASSED[0m[33m    [100%][0m
+
+============================= slowest 10 durations =============================
+1.27s call     tests/test_skill_import_github_e2e.py::test_import_skill_from_github_live
+0.81s call     tests/test_skill_import_github_e2e.py::test_import_skill_from_github_rejects_invalid_url
+0.65s call     tests/test_llm_gateway.py::TestToLangChain::test_all_roles_converted
+0.16s call     tests/test_skill_package_ingest.py::test_ingest_rejects_aggregate_uncompressed_package_over_cap
+0.09s call     tests/test_skill_archive.py::test_uncompressed_package_size_cap_applies_to_reads
+0.08s call     tests/test_skill_archive.py::test_uncompressed_package_size_cap_is_aggregate
+0.05s call     tests/test_single_loop_manus.py::test_agent_loop_flow_invalid_plan_report_allows_model_repair
+0.02s call     tests/test_openai_gateway.py::TestFromOpenAI::test_markdown_fenced_arguments_repaired
+0.02s call     tests/test_openai_gateway.py::TestFromOpenAI::test_unparseable_arguments_raise
+0.02s call     tests/test_llm_gateway.py::TestOrcaRouterProvider::test_orcarouter_defaults_to_orca_base_url
+[33m================ [32m244 passed[0m, [33m[1m2 deselected[0m, [33m[1m10 warnings[0m[33m in 7.93s[0m[33m ================[0m

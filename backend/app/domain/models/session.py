@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, UTC
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from enum import Enum
 import uuid
 from app.domain.models.event import PlanEvent, AgentEvent
@@ -22,6 +22,15 @@ class TaskMode(str, Enum):
     CHAT = "chat"
 
 
+class EngineKind(str, Enum):
+    """Dong co chay phien: `plan_act` (LangChain, mac dinh — khong doi hanh
+    vi cu) hoac mot CLI engine lam "nao" (`agy`, `claude_code`) — xem
+    docs/design/dot-2-cli-engine.md muc 4."""
+    PLAN_ACT = "plan_act"
+    AGY = "agy"
+    CLAUDE_CODE = "claude_code"
+
+
 class SessionSummary(BaseModel):
     """Lightweight session model for list views (excludes heavy events/files)"""
     id: str
@@ -36,6 +45,7 @@ class SessionSummary(BaseModel):
     is_pinned: bool = False
     project_id: Optional[str] = None
     task_mode: TaskMode = TaskMode.AGENT
+    engine: EngineKind = EngineKind.PLAN_ACT
 
 
 class Session(BaseModel):
@@ -59,6 +69,11 @@ class Session(BaseModel):
     is_pinned: bool = False
     project_id: Optional[str] = None
     task_mode: TaskMode = TaskMode.AGENT
+    # CLI engine (agy/Claude Code) — docs/design/dot-2-cli-engine.md muc 4.
+    engine: EngineKind = EngineKind.PLAN_ACT
+    conversation_ref: Optional[str] = None  # id hoi thoai CLI (de --conversation/--resume)
+    engine_last_seq: int = 0  # con tro phat lai /engine/events (sandbox)
+    engine_usage: Dict[str, Any] = {}  # so do dung CLI engine theo phien (thiet ke muc 5)
 
     def get_last_plan(self) -> Optional[Plan]:
         """Get the last plan from the events"""
