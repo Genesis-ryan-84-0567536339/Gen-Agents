@@ -1,0 +1,15 @@
+WS frames: FAKE_AGY_MODE=error (noi dung dung mau docs/evidence/dot-1/agy-p-auth-failed.txt) -> ErrorEvent tieng Viet, khong treo
+---
+{"type": "joined", "session_id": "f0a4eb9ecab2404c", "request_id": "51fd302f-9ffd-4676-a41b-b9c4bd304031"}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "status_update", "data": {"event_id": "status-f0a4eb9ecab2404c-pending-1791551315", "timestamp": 1791551315, "agent_status": "pending"}}
+{"type": "ack", "request_id": "7f02c7e1-cfe3-4f09-b337-16223782169a", "op": "chat", "session_id": "f0a4eb9ecab2404c", "ok": true}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "status_update", "data": {"event_id": "status-f0a4eb9ecab2404c-running-1791551315", "timestamp": 1791551315, "agent_status": "running"}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "title", "data": {"event_id": "1791551317269-0", "timestamp": 1791551317, "title": "Test loi dang nhap."}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "message", "data": {"event_id": "1791551317278-0", "timestamp": 1791551317, "role": "assistant", "content": "OK, dang xu ly.", "attachments": null, "required_skills": null}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "tool", "data": {"event_id": "1791551317287-0", "timestamp": 1791551317, "tool_call_id": "12:run_command", "name": "mcp", "status": "calling", "function": "run_command", "args": {"CommandLine": "echo hi"}, "content": null, "brief": null}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "tool", "data": {"event_id": "1791551317292-0", "timestamp": 1791551317, "tool_call_id": "12:run_command", "name": "mcp", "status": "called", "function": "run_command", "args": {"CommandLine": "echo hi"}, "content": {"result": "hi\r\n"}, "brief": null}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "plan", "data": {"event_id": "1791551317298-0", "timestamp": 1791551317, "steps": [{"event_id": "1791551317298-0", "timestamp": 1791551317, "status": "running", "id": "1", "description": "", "result": null}]}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "step", "data": {"event_id": "1791551317301-0", "timestamp": 1791551317, "status": "running", "id": "1", "description": "", "result": null}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "error", "data": {"event_id": "1791551317308-0", "timestamp": 1791551317, "error": "Phiên đăng nhập của động cơ CLI không còn hiệu lực. Cần đăng nhập lại. (mã: chua_dang_nhap)"}}
+{"type": "event", "session_id": "f0a4eb9ecab2404c", "event": "status_update", "data": {"event_id": "status-f0a4eb9ecab2404c-error-1791551317", "timestamp": 1791551317, "agent_status": "error"}}
+{"type": "stream_end", "session_id": "f0a4eb9ecab2404c"}

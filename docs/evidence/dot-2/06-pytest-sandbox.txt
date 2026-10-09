@@ -1,0 +1,199 @@
+[1m============================= test session starts ==============================[0m
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ryan/LinuxDataB/Gen-Agents-wt-dot2/sandbox
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.15.1, libtmux-0.62.0, mock-3.15.1, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items
+
+tests/test_api_file.py::test_upload_file_success 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:17:07 test_api_file.py:36 [[32mINFO[0m]: Upload response: {'success': True, 'message': 'File uploaded successfully', 'data': {'file_path': '/tmp/test_upload_unique.txt', 'file_size': 27, 'success': True}}
+2026-10-09 20:17:07 test_api_file.py:46 [[32mINFO[0m]: Read response: {'success': True, 'message': 'File read successfully', 'data': {'content': 'This is test upload content', 'file': '/tmp/test_upload_unique.txt'}}
+[32mPASSED[0m[32m                                                                   [  2%][0m
+tests/test_api_file.py::test_download_file_success [32mPASSED[0m[32m                [  4%][0m
+tests/test_api_file.py::test_download_nonexistent_file 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:17:07 test_api_file.py:69 [[32mINFO[0m]: Download response: 404
+[32mPASSED[0m[32m                                                                   [  6%][0m
+tests/test_api_shell.py::TestShellExec::test_simple_command_completes [32mPASSED[0m[32m [  9%][0m
+tests/test_api_shell.py::TestShellExec::test_auto_session_id [32mPASSED[0m[32m      [ 11%][0m
+tests/test_api_shell.py::TestShellExec::test_nonzero_returncode [32mPASSED[0m[32m   [ 13%][0m
+tests/test_api_shell.py::TestShellExec::test_exec_dir_is_respected [32mPASSED[0m[32m [ 15%][0m
+tests/test_api_shell.py::TestShellExec::test_invalid_exec_dir [32mPASSED[0m[32m     [ 18%][0m
+tests/test_api_shell.py::TestShellStatePersistence::test_env_and_cwd_persist [32mPASSED[0m[32m [ 20%][0m
+tests/test_api_shell.py::TestShellStatePersistence::test_venv_activation_persists [32mPASSED[0m[32m [ 22%][0m
+tests/test_api_shell.py::TestShellStatePersistence::test_sessions_are_isolated [32mPASSED[0m[32m [ 25%][0m
+tests/test_api_shell.py::TestShellLongRunning::test_long_running_wait_and_view [32mPASSED[0m[32m [ 27%][0m
+tests/test_api_shell.py::TestShellLongRunning::test_wait_timeout [32mPASSED[0m[32m  [ 29%][0m
+tests/test_api_shell.py::TestShellLongRunning::test_view_while_running [32mPASSED[0m[32m [ 31%][0m
+tests/test_api_shell.py::TestShellWrite::test_write_to_interactive_command [32mPASSED[0m[32m [ 34%][0m
+tests/test_api_shell.py::TestShellWrite::test_write_when_idle_fails [32mPASSED[0m[32m [ 36%][0m
+tests/test_api_shell.py::TestShellKill::test_kill_running_command [32mPASSED[0m[32m [ 38%][0m
+tests/test_api_shell.py::TestShellKill::test_kill_when_idle [32mPASSED[0m[32m       [ 40%][0m
+tests/test_api_shell.py::TestShellConsole::test_console_records [32mPASSED[0m[32m   [ 43%][0m
+tests/test_api_shell.py::TestShellConsole::test_view_unknown_session [32mPASSED[0m[32m [ 45%][0m
+tests/test_engine_api.py::TestEngineLifecycle::test_start_send_events_result_success [32mPASSED[0m[32m [ 47%][0m
+tests/test_engine_api.py::TestEngineLifecycle::test_start_twice_is_idempotent_reused [32mPASSED[0m[32m [ 50%][0m
+tests/test_engine_api.py::TestEngineLifecycle::test_from_seq_replays_only_newer_lines [32mPASSED[0m[32m [ 52%][0m
+tests/test_engine_api.py::TestEngineLifecycle::test_stop_then_status_not_alive [32mPASSED[0m[32m [ 54%][0m
+tests/test_engine_api.py::TestEngineLifecycle::test_unknown_binary_rejected_by_allowlist [32mPASSED[0m[32m [ 56%][0m
+tests/test_engine_api.py::TestEngineLifecycle::test_line_larger_than_64kib_not_truncated_with_limit [32mPASSED[0m[32m [ 59%][0m
+tests/test_engine_api.py::TestEngineAskUserResume::test_ask_user_then_resume_same_conversation [32mPASSED[0m[32m [ 61%][0m
+tests/test_file_truncation.py::test_read_file_returns_full_content_by_default [32mPASSED[0m[32m [ 63%][0m
+tests/test_file_truncation.py::test_read_file_honors_line_range [32mPASSED[0m[32m   [ 65%][0m
+tests/test_file_truncation.py::test_read_file_honors_explicit_max_length [32mPASSED[0m[32m [ 68%][0m
+tests/test_file_truncation.py::test_str_replace_on_large_file_preserves_tail [32mPASSED[0m[32m [ 70%][0m
+tests/test_file_truncation.py::test_find_in_content_matches_past_former_default_cap [32mPASSED[0m[32m [ 72%][0m
+tests/test_mcp_tools.py::TestToolsList::test_exactly_25_tools 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:58 streamable_http.py:207 [[32mINFO[0m]: Received session ID: b9aff11a00314aa8a0807697874f334d
+2026-10-09 20:17:58 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 75%][0m
+tests/test_mcp_tools.py::TestShellTools::test_shell_exec_echo 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:58 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 916b4608d09b412ca3d9dd6748202eb5
+2026-10-09 20:17:58 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:17:58 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 77%][0m
+tests/test_mcp_tools.py::TestShellTools::test_shell_view_after_exec 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 3dcdae4b961a4270a263ab6559818415
+2026-10-09 20:17:59 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 79%][0m
+tests/test_mcp_tools.py::TestShellTools::test_shell_wait_long_running_past_30s 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 streamable_http.py:207 [[32mINFO[0m]: Received session ID: fe31185e19b94040b8b9f834b8af1c5d
+2026-10-09 20:17:59 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:17:59 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:04 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:04 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 81%][0m
+tests/test_mcp_tools.py::TestFileTools::test_write_then_read 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 87e6fb5edb0240fda472fe7eb3dad081
+2026-10-09 20:18:31 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 84%][0m
+tests/test_mcp_tools.py::TestFileTools::test_find_by_name 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 0ecd4e8b4a0a4081a61db8cda5017bb1
+2026-10-09 20:18:31 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 streamable_http.py:323 [[32mINFO[0m]: GET stream disconnected, reconnecting in 1000ms...
+[32mPASSED[0m[32m                                                                   [ 86%][0m
+tests/test_mcp_tools.py::TestForbiddenPaths::test_file_read_rejects_gemini_home 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 7cbf89ec21eb4b17b1a720f858e29b08
+2026-10-09 20:18:31 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 88%][0m
+tests/test_mcp_tools.py::TestBrowserTools::test_navigate_default_has_no_image 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 45d1490da7504a71acebcf034b87e369
+2026-10-09 20:18:31 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:31 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 90%][0m
+tests/test_mcp_tools.py::TestBrowserTools::test_view_includes_real_image_content 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 streamable_http.py:207 [[32mINFO[0m]: Received session ID: a90d726eed29485bb4a40299ae4203f8
+2026-10-09 20:18:33 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 93%][0m
+tests/test_mcp_tools.py::TestBrowserTools::test_with_screenshot_param_adds_image 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 streamable_http.py:207 [[32mINFO[0m]: Received session ID: e696763156714068ac3944787bc44ffc
+2026-10-09 20:18:33 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:33 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 95%][0m
+tests/test_mcp_tools.py::TestProgressTools::test_plan_update_returns_confirmation 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 streamable_http.py:207 [[32mINFO[0m]: Received session ID: 1d4db2e892f448388807f6e7757e3c8d
+2026-10-09 20:18:34 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 97%][0m
+tests/test_mcp_tools.py::TestProgressTools::test_message_notify_user_returns_confirmation 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 streamable_http.py:207 [[32mINFO[0m]: Received session ID: d0200f117f4a421983ba2e647f3a40f4
+2026-10-09 20:18:34 streamable_http.py:219 [[32mINFO[0m]: Negotiated protocol version: 2025-11-25
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 202 Accepted"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: GET http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: POST http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+2026-10-09 20:18:34 _client.py:1740 [[32mINFO[0m]: HTTP Request: DELETE http://127.0.0.1:8081/mcp "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [100%][0m
+
+============================= slowest 10 durations =============================
+32.23s call     tests/test_mcp_tools.py::TestShellTools::test_shell_wait_long_running_past_30s
+15.16s call     tests/test_engine_api.py::TestEngineAskUserResume::test_ask_user_then_resume_same_conversation
+8.26s call     tests/test_api_shell.py::TestShellLongRunning::test_view_while_running
+7.29s call     tests/test_api_shell.py::TestShellLongRunning::test_wait_timeout
+7.29s call     tests/test_api_shell.py::TestShellLongRunning::test_long_running_wait_and_view
+5.33s call     tests/test_api_shell.py::TestShellWrite::test_write_to_interactive_command
+5.27s call     tests/test_api_shell.py::TestShellKill::test_kill_running_command
+1.23s call     tests/test_mcp_tools.py::TestBrowserTools::test_navigate_default_has_no_image
+0.78s call     tests/test_api_shell.py::TestShellStatePersistence::test_venv_activation_persists
+0.60s call     tests/test_mcp_tools.py::TestBrowserTools::test_view_includes_real_image_content
+[32m======================== [32m[1m44 passed[0m[32m in 87.27s (0:01:27)[0m[32m =========================[0m

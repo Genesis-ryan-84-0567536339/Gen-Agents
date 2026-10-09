@@ -1,0 +1,31 @@
+[1m============================= test session starts ==============================[0m
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/ryan/LinuxDataB/Gen-Agents-wt-dot2/backend
+configfile: pytest.ini
+testpaths: tests
+plugins: langsmith-0.12.2, mock-3.15.1, asyncio-1.4.0, anyio-4.12.1, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0m
+[1m----------------------------- live log collection ------------------------------[0m
+2026-10-09 20:18:54 _client.py:1025 [[32mINFO[0m]: HTTP Request: GET http://localhost:8090/mock/scenario "HTTP/1.1 200 OK"
+2026-10-09 20:18:54 _client.py:1025 [[32mINFO[0m]: HTTP Request: PUT http://localhost:8000/api/v1/sessions "HTTP/1.1 200 OK"
+collected 290 items / 288 deselected / 2 selected
+
+tests/test_e2e_plan_act.py::test_e2e_plan_act_smoke 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:18:56 _client.py:1025 [[32mINFO[0m]: HTTP Request: POST http://localhost:8090/mock/scenario "HTTP/1.1 200 OK"
+2026-10-09 20:18:56 _client.py:1025 [[32mINFO[0m]: HTTP Request: PUT http://localhost:8000/api/v1/sessions "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [ 50%][0m
+tests/test_e2e_plan_act.py::test_e2e_plan_act_wait_and_resume 
+[1m-------------------------------- live log call ---------------------------------[0m
+2026-10-09 20:19:02 _client.py:1025 [[32mINFO[0m]: HTTP Request: POST http://localhost:8090/mock/scenario "HTTP/1.1 200 OK"
+2026-10-09 20:19:02 _client.py:1025 [[32mINFO[0m]: HTTP Request: PUT http://localhost:8000/api/v1/sessions "HTTP/1.1 200 OK"
+[32mPASSED[0m[32m                                                                   [100%][0m
+
+============================= slowest 10 durations =============================
+9.17s call     tests/test_e2e_plan_act.py::test_e2e_plan_act_wait_and_resume
+6.42s call     tests/test_e2e_plan_act.py::test_e2e_plan_act_smoke
+
+(4 durations < 0.005s hidden.  Use -vv to show these durations.)
+[32m====================== [32m[1m2 passed[0m, [33m288 deselected[0m[32m in 18.05s[0m[32m ======================[0m

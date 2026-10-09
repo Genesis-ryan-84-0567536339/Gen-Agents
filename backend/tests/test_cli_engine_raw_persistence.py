@@ -67,6 +67,31 @@ class TestRawLinePersistence:
         runs = await repo.find_by_session("session-1")
         assert runs[0]["status"] == "WAITING"
 
+    async def test_wait_event_closes_turn_correctly_even_when_consumer_stops_right_after_it(self):
+        """Regression (phat hien qua bang chung dot 2 chay thuc voi fake_agy):
+        agent_task_runner.py._run_flow lam dung NHU THE NAY — `async for event
+        in flow: if isinstance(event, WaitEvent): ...; return` — `return`
+        ngay trong `async for` khien Python DONG generator cua CliEngineFlow
+        bang GeneratorExit TAI DIEM yield cuoi (WaitEvent), nen moi dong code
+        SAU yield trong CUNG mot vong lap se KHONG chay. Neu cap nhat
+        turn_status/self._done sau yield (loi da gap thuc te: ghi "ERROR" o
+        Mongo cho mot luot thuc ra la WAITING), test nay se bat lai duoc loi
+        do — khac voi `collect()` (rut het generator) o cac test khac, vi
+        collect() khong bao gio dong generator som nen khong lo ra loi nay."""
+        repo = FakeEngineRunRepository()
+        engine = FakeEngine([_init_ev(), EngineEvent(kind="ask_user", raw={"event": "ask"}, text="tiep tuc khong?")])
+        flow = build_cli_engine_flow(engine, engine_run_repository=repo)
+        gen = flow.run(Message(message="hi"))
+        try:
+            async for event in gen:
+                if event.__class__.__name__ == "WaitEvent":
+                    break  # mo phong "return" ngay trong async for cua runner thuc
+        finally:
+            await gen.aclose()  # chinh xac nhu Python tu lam khi "return" trong async for
+        runs = await repo.find_by_session("session-1")
+        assert runs[0]["status"] == "WAITING"
+        assert flow.is_done() is False
+
     async def test_error_event_closes_turn_with_error_status(self):
         repo = FakeEngineRunRepository()
         engine = FakeEngine([_init_ev(), EngineEvent(kind="error", raw={}, code="khac", text="loi la")])

@@ -1,0 +1,14 @@
+data: {"seq": 1, "stream": "stdout", "ts": 1791550944.5870187, "line": "{\"event\": \"init\", \"conversation_id\": \"fake-conv-001\", \"init\": {\"model\": \"gemini-3.8-flash-low\", \"cwd\": \"/home/ubuntu\", \"tools\": [\"run_command\", \"view_file\", \"sandbox__plan_update\", \"sandbox__message_ask_user\"], \"permission_mode\": \"request-review\"}}"}
+
+data: {"seq": 2, "stream": "stdout", "ts": 1791550944.5870354, "line": "{\"event\": \"step_update\", \"step_update\": {\"step_index\": 11, \"state\": \"ACTIVE\", \"step_type\": \"agent_response\", \"text_delta\": \"OK, dang xu ly.\"}}"}
+
+data: {"seq": 3, "stream": "stdout", "ts": 1791550944.5870414, "line": "{\"event\": \"step_update\", \"step_update\": {\"step_index\": 12, \"state\": \"ACTIVE\", \"step_type\": \"tool\", \"tool_name\": \"run_command\", \"tool_info\": {\"name\": \"run_command\", \"parameters\": {\"CommandLine\": \"echo hi\"}}}}"}
+
+data: {"seq": 4, "stream": "stdout", "ts": 1791550944.5870461, "line": "{\"event\": \"step_update\", \"step_update\": {\"step_index\": 12, \"state\": \"DONE\", \"step_type\": \"tool\", \"tool_name\": \"run_command\", \"tool_info\": {\"name\": \"run_command\", \"output\": \"hi\\r\\n\"}}}"}
+
+data: {"seq": 5, "stream": "stdout", "ts": 1791550944.5870507, "line": "{\"event\": \"step_update\", \"step_update\": {\"step_index\": 13, \"state\": \"ACTIVE\", \"step_type\": \"tool\", \"tool_name\": \"sandbox__plan_update\", \"tool_info\": {\"name\": \"sandbox__plan_update\", \"parameters\": {\"steps\": [{\"id\": \"1\", \"status\": \"running\"}], \"reflection\": \"\"}}}}"}
+
+data: {"seq": 6, "stream": "stdout", "ts": 1791550944.5870736, "line": "{\"event\": \"step_update\", \"step_update\": {\"step_index\": 13, \"state\": \"DONE\", \"step_type\": \"tool\", \"tool_name\": \"sandbox__plan_update\", \"tool_info\": {\"name\": \"sandbox__plan_update\", \"output\": \"Da ghi nhan plan_update (1 buoc).\"}, \"usage\": {\"input_tokens\": 100, \"output_tokens\": 10, \"total_tokens\": 110}}}"}
+
+data: {"seq": 7, "stream": "stdout", "ts": 1791550944.5870793, "line": "{\"event\": \"result\", \"result\": {\"conversation_id\": \"fake-conv-001\", \"status\": \"SUCCESS\", \"response\": \"OK\\n\", \"duration_seconds\": 0.01, \"num_turns\": 1, \"usage\": {\"input_tokens\": 13441, \"output_tokens\": 10, \"thinking_tokens\": 0, \"cache_read_tokens\": 0, \"total_tokens\": 13451}}}"}
+

@@ -1,0 +1,28 @@
+WS frames: ask_user -> WaitEvent (trang thai waiting) -> tra loi -> tiep tuc cung conversation_id
+---
+{"type": "joined", "session_id": "82f3f18d8e504107", "request_id": "a82c59ae-305e-4d89-b9e7-8e94df356d0c"}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "status_update", "data": {"event_id": "status-82f3f18d8e504107-pending-1791550920", "timestamp": 1791550920, "agent_status": "pending"}}
+{"type": "ack", "request_id": "510c559c-5ab7-4a6e-90c0-681ffd50050c", "op": "chat", "session_id": "82f3f18d8e504107", "ok": true}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "status_update", "data": {"event_id": "status-82f3f18d8e504107-running-1791550920", "timestamp": 1791550920, "agent_status": "running"}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "title", "data": {"event_id": "1791550922167-0", "timestamp": 1791550922, "title": "Hoi minh truoc khi lam."}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "message", "data": {"event_id": "1791550922177-0", "timestamp": 1791550922, "role": "assistant", "content": "OK, dang xu ly.", "attachments": null, "required_skills": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "tool", "data": {"event_id": "1791550922183-0", "timestamp": 1791550922, "tool_call_id": "12:run_command", "name": "mcp", "status": "calling", "function": "run_command", "args": {"CommandLine": "echo hi"}, "content": null, "brief": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "tool", "data": {"event_id": "1791550922186-0", "timestamp": 1791550922, "tool_call_id": "12:run_command", "name": "mcp", "status": "called", "function": "run_command", "args": {"CommandLine": "echo hi"}, "content": {"result": "hi\r\n"}, "brief": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "plan", "data": {"event_id": "1791550922192-0", "timestamp": 1791550922, "steps": [{"event_id": "1791550922192-0", "timestamp": 1791550922, "status": "running", "id": "1", "description": "", "result": null}]}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "step", "data": {"event_id": "1791550922195-0", "timestamp": 1791550922, "status": "running", "id": "1", "description": "", "result": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "message", "data": {"event_id": "1791550922200-0", "timestamp": 1791550922, "role": "assistant", "content": "Ban muon tiep tuc khong?", "attachments": null, "required_skills": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "wait", "data": {"event_id": "1791550922209-0", "timestamp": 1791550922}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "status_update", "data": {"event_id": "status-82f3f18d8e504107-waiting-1791550922", "timestamp": 1791550922, "agent_status": "waiting"}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "status_update", "data": {"event_id": "status-82f3f18d8e504107-waiting-1791550922", "timestamp": 1791550922, "agent_status": "waiting"}}
+{"type": "stream_end", "session_id": "82f3f18d8e504107"}
+{"type": "ack", "request_id": "f809fb87-8278-4823-9c47-3a2bffcacd2b", "op": "chat", "session_id": "82f3f18d8e504107", "ok": true}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "status_update", "data": {"event_id": "status-82f3f18d8e504107-running-1791550922", "timestamp": 1791550922, "agent_status": "running"}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "message", "data": {"event_id": "1791550923527-0", "timestamp": 1791550923, "role": "assistant", "content": "OK, dang xu ly.", "attachments": null, "required_skills": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "tool", "data": {"event_id": "1791550923537-0", "timestamp": 1791550923, "tool_call_id": "22:run_command", "name": "mcp", "status": "calling", "function": "run_command", "args": {"CommandLine": "echo hi"}, "content": null, "brief": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "tool", "data": {"event_id": "1791550923543-0", "timestamp": 1791550923, "tool_call_id": "22:run_command", "name": "mcp", "status": "called", "function": "run_command", "args": {"CommandLine": "echo hi"}, "content": {"result": "hi\r\n"}, "brief": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "plan", "data": {"event_id": "1791550923548-0", "timestamp": 1791550923, "steps": [{"event_id": "1791550923548-0", "timestamp": 1791550923, "status": "running", "id": "1", "description": "", "result": null}]}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "message", "data": {"event_id": "1791550923556-0", "timestamp": 1791550923, "role": "assistant", "content": "OK\n", "attachments": null, "required_skills": null}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "plan", "data": {"event_id": "1791550923563-0", "timestamp": 1791550923, "steps": [{"event_id": "1791550923563-0", "timestamp": 1791550923, "status": "running", "id": "1", "description": "", "result": null}]}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "done", "data": {"event_id": "1791550923565-0", "timestamp": 1791550923}}
+{"type": "event", "session_id": "82f3f18d8e504107", "event": "status_update", "data": {"event_id": "status-82f3f18d8e504107-completed-1791550923", "timestamp": 1791550923, "agent_status": "completed"}}
+{"type": "stream_end", "session_id": "82f3f18d8e504107"}

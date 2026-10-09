@@ -1,0 +1,46 @@
+Muc 6 thiet ke (HOME tam dev) — thu dang nhap agy that trong container dev
+=============================================================================
+Ngay: 2026-10-09. Moi truong: agent Sonnet thi cong (khong co man hinh/trinh
+duyet, chi co Bash tool khong tuong tac).
+
+Buoc 1 — dang nhap:
+  docker compose -f docker-compose-development.yml exec -u ubuntu \
+    -e HOME=/home/ubuntu/.engine-home -T sandbox agy
+  => "CLI error: bubbletea: error opening TTY: bubbletea: could not open TTY:
+      open /dev/tty: no such device or address"
+  (Dung nhu docs/evidence/dot-1/agy-p-auth-failed.txt da ghi: agy BAT BUOC
+  mot TTY thuc de ve giao dien bubbletea va in URL dang nhap.)
+
+  Thu lai voi `-it`:
+  docker compose -f docker-compose-development.yml exec -u ubuntu \
+    -e HOME=/home/ubuntu/.engine-home -it sandbox agy
+  => VAN loi "could not open TTY" — cong cu Bash cua agent nay khong gan
+  mot pseudo-TTY thuc cho tien trinh con (khong giong terminal thuc cua
+  Boss), nen `-it` khong giup gi trong moi truong nay.
+
+  Thu lap mot pty bang Python (os.openpty + subprocess) de gia lap TTY:
+  khong lay duoc bat ky output nao sau 15-18s (tien trinh van "song" theo
+  poll() nhung khong ghi gi vao pty) — co the do lop sandbox cua chinh
+  cong cu Bash nay chan truy cap /dev/pts hoac tin hieu tien trinh con theo
+  cach khac thuong. Khong dieu tra sau hon — day la han che cua MOI TRUONG
+  THI CONG (agent khong co terminal thuc), khong phai loi code cua dot 2.
+
+KET LUAN: KHONG dang nhap duoc agy that trong phien thi cong tu dong nay.
+Dung dung theo dieu kien thiet ke muc 6 ("Neu buoc 3 khong thay file token
+nao: DUNG, khong thu vong thu tu") — ap dung tuong tu cho chinh buoc 1 vi
+khong co cach nao de Boss dan ma xac thuc vao mot phien Bash khong tuong
+tac. CAN Boss (hoac mot phien co terminal thuc/Boss tu chay) thuc hien:
+
+  docker compose -f docker-compose-development.yml exec -u ubuntu \
+    -e HOME=/home/ubuntu/.engine-home -it sandbox agy
+  # mo URL in ra bang browser tren HOST, dang nhap, dan ma lai vao PTY
+
+sau do kiem lai buoc 2-5 cua thiet ke (khong co keyring, token nam o file,
+chuc nang agy -p thuc, ben qua restart).
+
+Theo thiet ke: toan bo test + bang chung con lai cua dot 2 chuyen sang dung
+`fake_agy.py` (muc 7 cua thiet ke) — cac muc nghiem thu can agy THAT (vd do
+#1b tien to ten tool MCP thuc su agy in ra) doi sang dot 3, khi co nguoi
+thuc hien dang nhap tay duoc.
+
+Da comment ket luan nay len Issue #30 (xem phan "Bang giao" cua PR).

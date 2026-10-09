@@ -17,7 +17,13 @@ import requests
 
 from tests.conftest import BASE_URL
 
-FAKE_AGY_PATH = os.path.join(os.path.dirname(__file__), "fake_agy.py")
+# QUAN TRONG: /api/v1/engine/start chay TRONG container sandbox (tien trinh
+# tool API), con test nay (job "Sandbox API tests" cua CI, xem conftest.py)
+# chay TREN RUNNER/HOST, chi goi REST toi container qua BASE_URL. Vi vay
+# duong dan phai la duong dan BEN TRONG container (bind-mount "./sandbox:/app",
+# xem docker-compose-development.yml), KHONG duoc tu os.path.dirname(__file__)
+# (do se ra duong dan host, sai hoan toan trong container).
+FAKE_AGY_PATH = os.environ.get("FAKE_AGY_CONTAINER_PATH", "/app/tests/fake_agy.py")
 
 
 def _argv(extra_env: dict | None = None):
@@ -66,11 +72,21 @@ def _stop(client, engine_id, signal=None):
 
 def _read_sse_events(engine_id, from_seq=0, max_events=50, timeout=15):
     """Doc SSE thong qua requests (stream=True), tra ve list dict da parse,
-    dung ngay khi gap mot dong co event=='result' hoac het timeout."""
+    dung ngay khi gap mot dong co event=='result' hoac het timeout.
+
+    QUAN TRONG: timeout cua requests la "khong co byte nao den trong X giay"
+    (tung lan doc), KHONG phai tong thoi gian — endpoint phat keepalive
+    ": ping" moi 15s (xem sandbox/app/api/v1/engine.py). Phai dat timeout
+    HTTP lon hon 15s, neu khong requests tu nem ReadTimeoutError truoc khi
+    kip toi keepalive tiep theo (gap khi cho ask_user, khong co dong moi
+    trong khoang 10-15s). deadline ben duoi moi la co che dung dung logic
+    cua test.
+    """
     url = f"{BASE_URL}/api/v1/engine/events"
     events = []
     deadline = time.monotonic() + timeout
-    with requests.get(url, params={"engine_id": engine_id, "from_seq": from_seq}, stream=True, timeout=timeout) as resp:
+    http_timeout = max(timeout, 20)
+    with requests.get(url, params={"engine_id": engine_id, "from_seq": from_seq}, stream=True, timeout=http_timeout) as resp:
         assert resp.status_code == 200
         for raw_line in resp.iter_lines(decode_unicode=True):
             if time.monotonic() > deadline or len(events) >= max_events:

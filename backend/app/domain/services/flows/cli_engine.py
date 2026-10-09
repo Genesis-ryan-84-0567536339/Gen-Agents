@@ -261,6 +261,7 @@ class CliEngineFlow(BaseFlow):
         self._raw_keep = raw_keep
         self._raw_max_bytes = raw_max_bytes
         self._latest_usage: Dict[str, Any] = {}
+        self._tool_args_by_call_id: Dict[str, dict] = {}
         self._session_repository = session_repository
         self._sandbox = sandbox
         self._engine = engine
@@ -378,23 +379,32 @@ class CliEngineFlow(BaseFlow):
 
                 stop_after = False
                 for agent_event in await self._translate_engine_event(engine_event):
-                    yield agent_event
                     if isinstance(agent_event, TitleEvent):
                         await self._session_repository.update_title(self._session_id, agent_event.title)
+                    # QUAN TRONG: moi cap nhat trang thai (turn_status,
+                    # self._done) PHAI xay ra TRUOC "yield", khong phai sau.
+                    # Khi nguoi goi (_run_flow trong agent_task_runner.py)
+                    # thay WaitEvent/DoneEvent/ErrorEvent va tu `return` ngay
+                    # trong `async for`, Python dong generator nay bang
+                    # GeneratorExit NGAY TAI diem yield — code SAU yield cua
+                    # CHINH lan yield cuoi do se KHONG BAO GIO chay. Da bat
+                    # qua thuc te (bang chung dot 2): turn engine_runs ghi
+                    # sai "ERROR" cho mot luot that ra la WAITING vi dong
+                    # cap nhat turn_status nam sau yield.
                     if isinstance(agent_event, WaitEvent):
                         self._done = False
                         turn_status = "WAITING"
                         stop_after = True
-                        break
-                    if isinstance(agent_event, DoneEvent):
+                    elif isinstance(agent_event, DoneEvent):
                         self._done = True
                         turn_status = "SUCCESS"
                         stop_after = True
-                        break
-                    if isinstance(agent_event, ErrorEvent):
+                    elif isinstance(agent_event, ErrorEvent):
                         self._done = True
                         turn_status = "ERROR"
                         stop_after = True
+                    yield agent_event
+                    if stop_after:
                         break
                 if stop_after:
                     return
@@ -494,21 +504,31 @@ class CliEngineFlow(BaseFlow):
             flushed = self._flush_text()
             if flushed:
                 out.append(flushed)
+            args = dict(ev.tool_args or {})
+            if ev.tool_call_id:
+                # _handle_tool_event (agent_task_runner.py) doc function_args
+                # cua CA hai CALLING va CALLED de biet file/shell nao can lam
+                # tuoi lai noi dung (FileToolContent/ShellToolContent,
+                # TerminalUpdateEvent/FileUpdateEvent) — NDJSON cua CLI chi
+                # co parameters o dong ACTIVE, dong DONE chi co output. Giu
+                # lai args theo tool_call_id de "tra" lai luc tool_result.
+                self._tool_args_by_call_id[ev.tool_call_id] = args
             out.append(ToolEvent(
                 tool_call_id=ev.tool_call_id or "",
                 tool_name=tool_group(ev.tool_name),
                 function_name=ev.tool_name or "",
-                function_args=dict(ev.tool_args or {}),
+                function_args=args,
                 status=ToolStatus.CALLING,
             ))
             return out
 
         if ev.kind == "tool_result":
+            args = self._tool_args_by_call_id.pop(ev.tool_call_id or "", {})
             out.append(ToolEvent(
                 tool_call_id=ev.tool_call_id or "",
                 tool_name=tool_group(ev.tool_name),
                 function_name=ev.tool_name or "",
-                function_args={},
+                function_args=args,
                 status=ToolStatus.CALLED,
                 function_result=ToolResult(success=True, data=ev.tool_output),
             ))

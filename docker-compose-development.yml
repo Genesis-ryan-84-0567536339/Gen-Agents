@@ -57,6 +57,9 @@ services:
       - .env
     environment:
       - SANDBOX_ADDRESS=sandbox # Use single container as sandbox
+      # HOME tam dev cho CLI engine (agy/claude) — docs/design/dot-2-cli-engine.md
+      # muc 6. Chi dev/CI; KHONG dat o docker-compose.yml (production).
+      - GEN_ENGINE_DEV_HOME=/home/ubuntu/.engine-home
 
   sandbox:
     build:
@@ -68,6 +71,11 @@ services:
       - ./sandbox/supervisord.conf:/etc/supervisor/conf.d/app.conf
       - /app/__pycache__  # Avoid overwriting cache files
       - /app/.venv  # Avoid overwriting virtual environment
+      # HOME tam dev cho CLI engine (agy/claude), song qua restart — docs/design/
+      # dot-2-cli-engine.md muc 6. Dang nhap mot lan trong container dev
+      # (docker compose exec -e HOME=/home/ubuntu/.engine-home -it sandbox agy),
+      # phien o day thay vi trong HOME mac dinh (khong co keyring de luu).
+      - ${GEN_ENGINE_DEV_HOME_HOST:-./.dev-home}:/home/ubuntu/.engine-home
     ports:
       #- "9222:9222"
       - "5902:5900"

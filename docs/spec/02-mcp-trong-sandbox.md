@@ -294,3 +294,19 @@ chi tiết triển khai.
    trong container, và host-side mapping trong `docker-compose-development.yml`
    cũng chỉ mở ra `127.0.0.1` của máy dev/runner (không phải `0.0.0.0`),
    không lộ ra mạng ngoài.
+
+## Lệch so với spec và lý do (thi công đợt 2, Issue #30)
+
+8. **`sandbox/app/services/engine.py` (`/api/v1/engine/*`, dong co CLI —
+   xem `01-dong-co-cli.md`) dung chung user `ubuntu` va cung mang trong
+   container voi MCP server mo ta o tren**, khong phai mot thanh phan rieng.
+   Khong thay doi gi o tai lieu nay ve MCP; ghi lai vi `/engine/*` la lan
+   dau sandbox co mot tien trinh dai thu hai (ngoai `program:app`) ghi/doc
+   trang thai dong bo qua `asyncio.Event` — phat hien mot loi dua that
+   (race) trong chinh co che do khi nghiem thu thuc (khong phai MCP, nhung
+   cung tang sandbox nen ghi o day): mau "set() roi clear() ngay" trong
+   `_append_line()` co the lam mot waiter goi `wait()` SAU khi pulse da tat
+   phai cho het 15 giay cho mot tin hieu khong con den (du du lieu da san
+   sang). Sua: chuyen `clear()` vao dung luc chup anh (snapshot) danh sach
+   cho dong moi trong `events()`, giu nguyen lock. Chi tiet + bang chung lap
+   lai on dinh sau khi sua: `docs/evidence/dot-2/README.md`.

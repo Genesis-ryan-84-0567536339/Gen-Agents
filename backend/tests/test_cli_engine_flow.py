@@ -125,6 +125,23 @@ class TestToolEvents:
         assert tool_events[1].status == ToolStatus.CALLED
         assert tool_events[1].function_result.data == "hi\n"
 
+    async def test_tool_result_carries_forward_call_args_for_file_and_shell(self):
+        """_handle_tool_event (agent_task_runner.py) doc function_args cua
+        CA CALLED de biet file/shell nao can doc lai (FileToolContent/
+        ShellToolContent) — NDJSON cua CLI chi co parameters o dong ACTIVE.
+        Phat hien khi chay demo thuc voi fake_agy (bang chung dot 2, #2)."""
+        engine = FakeEngine([
+            _init_ev(),
+            EngineEvent(kind="tool_call", raw={}, tool_call_id="k1", tool_name="file_write", tool_args={"file": "/home/ubuntu/out.md"}),
+            EngineEvent(kind="tool_result", raw={}, tool_call_id="k1", tool_name="file_write", tool_output="done"),
+            EngineEvent(kind="done", raw={}, status="SUCCESS", text="ok"),
+        ])
+        flow = build_cli_engine_flow(engine)
+        events = await collect(flow, Message(message="hi"))
+        tool_events = [e for e in events if isinstance(e, ToolEvent)]
+        called = next(e for e in tool_events if e.status == ToolStatus.CALLED)
+        assert called.function_args == {"file": "/home/ubuntu/out.md"}
+
     async def test_shell_tool_mapped_to_shell_group(self):
         engine = FakeEngine([
             _init_ev(),

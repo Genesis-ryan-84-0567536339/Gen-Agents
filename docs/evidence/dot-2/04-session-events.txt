@@ -1,0 +1,25 @@
+{
+  "session_id": "82f3f18d8e504107",
+  "status": "completed",
+  "title": "Hoi minh truoc khi lam.",
+  "num_events": 17,
+  "event_kinds_in_order": [
+    "message",
+    "title",
+    "message",
+    "tool",
+    "tool",
+    "plan",
+    "step",
+    "message",
+    "wait",
+    "message",
+    "message",
+    "tool",
+    "tool",
+    "plan",
+    "message",
+    "plan",
+    "done"
+  ]
+}

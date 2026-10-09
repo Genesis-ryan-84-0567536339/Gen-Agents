@@ -162,8 +162,10 @@ class EngineService:
             engine.lines.append(
                 EngineLine(seq=engine.seq, stream=stream, ts=time.time(), line=line, truncated=truncated)
             )
-        engine.new_line_event.set()
-        engine.new_line_event.clear()
+            # CHI set(), KHONG tu clear() ngay o day — xem ghi chu trong
+            # events() ben duoi ve ly do "set roi clear ngay" la mot race
+            # that (mat tin hieu).
+            engine.new_line_event.set()
 
     async def _pump(self, engine: EngineProcess, stream: Optional[asyncio.StreamReader], label: str) -> None:
         """Doc tung dong tu stdout/stderr, phat vao deque. Dong qua dai (vuot
@@ -212,7 +214,6 @@ class EngineService:
             if engine.exited_at is None:
                 engine.exited_at = time.time()
             engine.new_line_event.set()
-            engine.new_line_event.clear()
 
     async def send(self, engine_id: str, line: str) -> Dict[str, object]:
         engine = self._engines.get(engine_id)
@@ -272,6 +273,18 @@ class EngineService:
         while True:
             async with engine.lock:
                 pending = [item for item in engine.lines if item.seq > last_seq]
+                # QUAN TRONG — tranh mat tin hieu (da bat qua thuc te, bang
+                # chung dot 2): clear() PHAI xay ra NGAY SAU khi chup anh
+                # (snapshot) "pending", VA trong CUNG mot lan giu lock voi
+                # lan set() gan nhat ma no se huy. Neu _append_line() tu
+                # set()-roi-clear() ngay (kieu "pulse"), mot waiter goi
+                # wait() SAU khi pulse da tat se cho het 15s cho mot tin
+                # hieu khong bao gio den nua (du du lieu moi da nam san
+                # trong engine.lines). Cach o day dam bao: bat ky dong nao
+                # duoc them vao SAU snapshot nay (ke ca dung luc nay) se tu
+                # set() lai, nen wait() ben duoi se tra ve ngay thay vi cho
+                # mu 15 giay.
+                engine.new_line_event.clear()
             for item in pending:
                 last_seq = item.seq
                 yield item
