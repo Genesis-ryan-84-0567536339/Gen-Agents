@@ -106,9 +106,11 @@ Không có linter/formatter cho backend/sandbox; frontend có ESLint, không có
 Prettier. CI (`.github/workflows/tests.yml`, chạy trên PR vào `main`/`develop`)
 có: test offline backend + `evals.run`, test/type-check/lint/build frontend,
 quét secret (gitleaks), kiểm doc embed không lệch, và E2E dựng cả dev stack
-(`docker-compose-development.yml`) rồi chạy `pytest -m e2e`; `nightly.yml` chạy
-lại bộ đó mỗi đêm và tự mở Issue khi hỏng. CI **không** chạy test của
-`sandbox/` — phần đó phải tự kiểm cục bộ.
+(`docker-compose-development.yml`) rồi chạy `pytest -m e2e` (backend) +
+`uv run pytest -q` (**`sandbox/`, bước "Sandbox API tests" — CI CÓ chạy test
+`sandbox/`, chạy trực tiếp trên runner chứ không qua `docker exec`, nên bất
+kỳ port nào test `sandbox/` cần gọi tới đều phải được `docker-compose-development.yml`
+map ra host**); `nightly.yml` chạy lại bộ đó mỗi đêm và tự mở Issue khi hỏng.
 
 Chi tiết đầy đủ hơn (bảng biến môi trường, ma trận test theo loại đổi, ghi
 chú Cursor Cloud): `AGENTS.md`. API đầy đủ: `.cursor/skills/starter.md`.

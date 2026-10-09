@@ -9,7 +9,15 @@ file này cần các dịch vụ THẬT đang chạy — không mock:
 - Chrome có CDP tại `CDP_TEST_URL` (mặc định http://127.0.0.1:19222 khi
   chạy test cục bộ ngoài container; trong container dùng 127.0.0.1:9222).
 - MCP server của chính đợt này tại `MCP_TEST_URL` (mặc định
-  http://127.0.0.1:8081/mcp).
+  http://127.0.0.1:8081/mcp). Trong CI (job "E2E", bước "Sandbox API
+  tests" — chạy TRỰC TIẾP trên runner, không qua `docker exec`),
+  `docker-compose-development.yml` map cổng này ra
+  `127.0.0.1:8081` của runner + đặt `GEN_AGENTS_MCP_BIND=0.0.0.0`
+  CHỈ cho service `sandbox` ở file dev đó, nên mặc định ở trên vẫn đúng mà
+  không cần set thêm biến môi trường. Container nhiệm vụ thật
+  (`docker-compose.yml`/`docker_sandbox.py`) không đặt biến này nên MCP
+  server vẫn chỉ bind `127.0.0.1` bên trong, đúng luật bảo mật mục 6 của
+  `docs/spec/02-mcp-trong-sandbox.md`.
 
 Chạy cục bộ (ngoài container, dùng để phát triển nhanh):
     uv run uvicorn app.main:app --port 8080 &            # tool API thật

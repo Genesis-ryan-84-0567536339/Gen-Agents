@@ -271,3 +271,18 @@ chi tiết triển khai.
    MCP vẫn điều khiển được đúng Chrome đó (CDP không cần xác thực vì Xvfb
    không chạy `-auth`). Nếu bằng chứng cho thấy ngược lại, mục này sẽ được
    sửa lại và ghi rõ lý do giữ nguyên `chrome` chạy root như trước.
+7. **Mở thêm một ngoại lệ CHỈ cho dev/CI vào luật "chỉ bind 127.0.0.1,
+   không expose 8081" của mục 6.** `.github/workflows/tests.yml` (bước
+   "Sandbox API tests") chạy `cd sandbox && uv run pytest -q` **trực tiếp
+   trên runner**, không qua `docker exec` vào container — runner không thể
+   với tới cổng chỉ bind `127.0.0.1` BÊN TRONG container. Vì vậy
+   `docker-compose-development.yml` (CHỈ file dev, không đụng
+   `docker-compose.yml` production) map thêm `"127.0.0.1:8081:8081"` cho
+   service `sandbox` và đặt `GEN_AGENTS_MCP_BIND=0.0.0.0` — biến môi
+   trường mới, MCP server đọc trong `sandbox/mcp/config.py` để quyết định
+   địa chỉ bind, mặc định vẫn `127.0.0.1` khi KHÔNG đặt biến này. Container
+   nhiệm vụ thật (`docker-compose.yml`/`docker_sandbox.py`) không đặt biến
+   này nên không đổi hành vi — MCP server ở đó vẫn chỉ bind `127.0.0.1`
+   trong container, và host-side mapping trong `docker-compose-development.yml`
+   cũng chỉ mở ra `127.0.0.1` của máy dev/runner (không phải `0.0.0.0`),
+   không lộ ra mạng ngoài.

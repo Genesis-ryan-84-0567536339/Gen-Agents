@@ -73,9 +73,20 @@ services:
       - "5902:5900"
       #- "5901:5901"
       - "8080:8080"
+      # Chi danh cho dev/CI: MCP server (Issue #29) can duoc goi truc tiep
+      # tu runner/host khi "Sandbox API tests" (.github/workflows/tests.yml)
+      # chay "uv run pytest" NGOAI container (khong qua docker exec). Bind
+      # host-side van gioi han 127.0.0.1 (khong 0.0.0.0) — khong mo ra
+      # mang ngoai may dev/runner. Container nhiem vu that
+      # (docker-compose.yml/docker_sandbox.py) KHONG co dong nay va KHONG
+      # dat GEN_AGENTS_MCP_BIND ben duoi, nen MCP server o do van chi bind
+      # 127.0.0.1 TRONG container, dung luat bao mat muc 6 cua
+      # docs/spec/02-mcp-trong-sandbox.md.
+      - "127.0.0.1:8081:8081"
     environment:
       - UVI_ARGS="--reload"
       - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - GEN_AGENTS_MCP_BIND=0.0.0.0
     restart: unless-stopped
     networks:
       - manus-network

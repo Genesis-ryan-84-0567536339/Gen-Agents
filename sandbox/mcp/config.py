@@ -20,8 +20,15 @@ TOOL_API_BASE = os.environ.get("TOOL_API_BASE", "http://127.0.0.1:8080/api/v1")
 # 8222, socat forward 9222 -> 8222)
 CDP_URL = os.environ.get("CDP_URL", "http://127.0.0.1:9222")
 
-# Bind của chính MCP server này — chỉ localhost, không expose ra ngoài container
-MCP_HOST = os.environ.get("MCP_HOST", "127.0.0.1")
+# Bind của chính MCP server này — MAC DINH chi localhost, khong expose ra
+# ngoai container (luat bao mat muc 6 cua docs/spec/02-mcp-trong-sandbox.md).
+# "GEN_AGENTS_MCP_BIND" la cong tac DUY NHAT duoc phep doi dia chi bind nay
+# sang "0.0.0.0" — chi dat o docker-compose-development.yml (CI/dev, de
+# "Sandbox API tests" trong .github/workflows/tests.yml chay duoc tu runner
+# host, khong qua docker exec). Container nhiem vu that
+# (docker-compose.yml/docker_sandbox.py) KHONG dat bien nay nen van bind
+# 127.0.0.1 nhu cu — khong doi hanh vi production.
+MCP_HOST = os.environ.get("GEN_AGENTS_MCP_BIND", "127.0.0.1")
 MCP_PORT = int(os.environ.get("MCP_PORT", "8081"))
 
 # File NDJSON mà 3 tool plan_update/message_ask_user/message_notify_user ghi
