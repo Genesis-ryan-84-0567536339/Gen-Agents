@@ -1,0 +1,25 @@
+=== docker compose ps (Fri Oct  9 02:26:42 PM +07 2026) ===
+NAME                                IMAGE                             COMMAND                  SERVICE        CREATED              STATUS              PORTS
+gen-agents-wt-dot0-backend-1        gen-agents-wt-dot0-backend        "uv run debugpy --li…"   backend        About a minute ago   Up About a minute   0.0.0.0:5678->5678/tcp, [::]:5678->5678/tcp, 0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+gen-agents-wt-dot0-frontend-dev-1   gen-agents-wt-dot0-frontend-dev   "docker-entrypoint.s…"   frontend-dev   33 seconds ago       Up 29 seconds       0.0.0.0:5174->5173/tcp, [::]:5174->5173/tcp
+gen-agents-wt-dot0-mockserver-1     gen-agents-wt-dot0-mockserver     "./dev.sh"               mockserver     About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp, [::]:8090->8090/tcp
+gen-agents-wt-dot0-mongodb-1        mongo:7.0                         "docker-entrypoint.s…"   mongodb        About a minute ago   Up About a minute   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
+gen-agents-wt-dot0-redis-1          redis:7.0                         "docker-entrypoint.s…"   redis          About a minute ago   Up About a minute   6379/tcp
+gen-agents-wt-dot0-sandbox-1        gen-agents-wt-dot0-sandbox        "supervisord -n -c /…"   sandbox        About a minute ago   Up About a minute   5901/tcp, 9222/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp, 0.0.0.0:5902->5900/tcp, [::]:5902->5900/tcp
+
+=== supervisorctl status (sandbox) ===
+services:app                     RUNNING   pid 13, uptime 0:01:01
+services:chrome                  RUNNING   pid 9, uptime 0:01:01
+services:socat                   RUNNING   pid 10, uptime 0:01:01
+services:websockify              RUNNING   pid 12, uptime 0:01:01
+services:x11vnc                  RUNNING   pid 30, uptime 0:00:59
+services:xvfb                    RUNNING   pid 8, uptime 0:01:01
+
+=== health curl ===
+backend /api/v1/sessions: 200
+mockserver /mock/scenario: 200
+frontend /: 200
+
+Ghi chu: port frontend map 5174->5173 CHI o may test nay (5173 dang bi
+chiem boi mot project khac - Ai-Games/Gen-Stage vite dev server). Khong
+doi file docker-compose-development.yml trong PR, chi doi tam cuc bo.

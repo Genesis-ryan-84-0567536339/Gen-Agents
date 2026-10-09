@@ -1,16 +1,12 @@
 name: Build and Push Docker Images to Docker Hub
 
+# Gen-Agents (fork): secrets không dùng được trong jobs.<id>.if (GitHub báo
+# lỗi parse workflow), nên chỉ kích hoạt khi tag v* hoặc chạy tay thủ công.
 on:
   push:
-    branches:
-      - main
-      - develop
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - main
-      - develop
+  workflow_dispatch: {}
 
 env:
   REGISTRY: docker.io
@@ -22,7 +18,7 @@ jobs:
     strategy:
       matrix:
         component: [frontend, backend, sandbox]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
