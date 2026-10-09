@@ -2,7 +2,7 @@
 
 ## Build
 
-- `build-sandbox.log`: log build image `sandbox` (plain progress) sau khi đổi
+- `build-sandbox-log.txt`: log build image `sandbox` (plain progress) sau khi đổi
   mirror apt/uv/npm từ Aliyun về mặc định — build từ cache, `EXITCODE:0`.
 - `ghi-chu-mirror-aliyun.md`: chẩn đoán vì sao build bản gốc (mirror Aliyun)
   kẹt >17 phút trên mạng VN, và lý do đổi mirror (commit riêng, có trong PR).
