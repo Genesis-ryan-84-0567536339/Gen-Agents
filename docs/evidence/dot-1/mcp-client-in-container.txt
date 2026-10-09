@@ -1,0 +1,59 @@
+TOOLS 25
+[
+  "browser_click",
+  "browser_console_exec",
+  "browser_console_view",
+  "browser_input",
+  "browser_move_mouse",
+  "browser_navigate",
+  "browser_press_key",
+  "browser_restart",
+  "browser_scroll_down",
+  "browser_scroll_up",
+  "browser_select_option",
+  "browser_view",
+  "file_find_by_name",
+  "file_find_in_content",
+  "file_read",
+  "file_str_replace",
+  "file_write",
+  "message_ask_user",
+  "message_notify_user",
+  "plan_update",
+  "shell_exec",
+  "shell_kill_process",
+  "shell_view",
+  "shell_wait",
+  "shell_write_to_process"
+]
+shell_exec: {
+  "success": true,
+  "message": "Command executed",
+  "data": {
+    "session_id": "2a6c17fb-7bdf-4943-9f38-dcb5cd297d68",
+    "command": "echo hello-mcp",
+    "status": "completed",
+    "returncode": 0,
+    "output": "hello-mcp"
+  }
+}
+file_write: {
+  "success": true,
+  "message": "File written successfully",
+  "data": {
+    "file": "/tmp/mcp-smoke-test.txt",
+    "bytes_written": 15
+  }
+}
+file_read: {
+  "success": true,
+  "message": "File read successfully",
+  "data": {
+    "content": "xin chao tu MCP",
+    "file": "/tmp/mcp-smoke-test.txt"
+  }
+}
+browser_navigate: {"success": true, "message": "Da dieu huong toi https://example.com", "data": {"url": "https://example.com/", "title": "Example Domain", "screenshot": "<102032 base64 chars>"}}
+browser_view: {"success": true, "message": "Da chup man hinh trang hien tai", "data": {"url": "https://example.com/", "title": "Example Domain", "screenshot": "<102032 base64 chars>"}}
+plan_update: Da ghi nhan plan_update (1 buoc).
+message_notify_user: Da ghi nhan message_notify_user.

@@ -1,0 +1,5 @@
+2.1.295 (Claude Code)
+1.3.2
+pandoc 2.9.2.1
+python-docx OK
+sudo KHONG CO

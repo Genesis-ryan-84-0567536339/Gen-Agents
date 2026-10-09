@@ -1,0 +1,162 @@
+--- shell_exec {'id': 'sess1', 'command': 'sleep 1 && echo done-wait'} ---
+{
+  "success": true,
+  "message": "Command executed",
+  "data": {
+    "session_id": "sess1",
+    "command": "sleep 1 && echo done-wait",
+    "status": "completed",
+    "returncode": 0,
+    "output": "done-wait"
+  }
+}
+--- shell_wait {'id': 'sess1', 'seconds': 5} ---
+{
+  "success": true,
+  "message": "Process completed, return code: 0",
+  "data": {
+    "returncode": 0
+  }
+}
+--- shell_exec {'id': 'sess1', 'command': 'cat'} ---
+{
+  "success": true,
+  "message": "Command executed",
+  "data": {
+    "session_id": "sess1",
+    "command": "cat",
+    "status": "running",
+    "returncode": null,
+    "output": null
+  }
+}
+--- shell_write_to_process {'id': 'sess1', 'input': 'hello-stdin', 'press_enter': True} ---
+{
+  "success": true,
+  "message": "Input written",
+  "data": {
+    "status": "success"
+  }
+}
+--- shell_view {'id': 'sess1'} ---
+{
+  "success": true,
+  "message": "Session content retrieved successfully",
+  "data": {
+    "output": "hello-stdin\nhello-stdin",
+    "session_id": "sess1",
+    "console": null
+  }
+}
+--- shell_kill_process {'id': 'sess1'} ---
+{
+  "success": true,
+  "message": "Process terminated",
+  "data": {
+    "status": "terminated",
+    "returncode": 130
+  }
+}
+--- file_write {'file': '/tmp/mcp_full_test.txt', 'content': 'AAA\nBBB\nCCC\n'} ---
+{
+  "success": true,
+  "message": "File written successfully",
+  "data": {
+    "file": "/tmp/mcp_full_test.txt",
+    "bytes_written": 12
+  }
+}
+--- file_str_replace {'file': '/tmp/mcp_full_test.txt', 'old_str': 'BBB', 'new_str': 'ZZZ'} ---
+{
+  "success": true,
+  "message": "Replacement completed, replaced 1 occurrences",
+  "data": {
+    "file": "/tmp/mcp_full_test.txt",
+    "replaced_count": 1
+  }
+}
+--- file_find_in_content {'file': '/tmp/mcp_full_test.txt', 'regex': 'ZZZ'} ---
+{
+  "success": true,
+  "message": "Search completed, found 1 matches",
+  "data": {
+    "file": "/tmp/mcp_full_test.txt",
+    "matches": [
+      "ZZZ"
+    ],
+    "line_numbers": [
+      1
+    ]
+  }
+}
+--- browser_navigate {'url': 'https://example.com'} ---
+{
+  "success": true,
+  "message": "Da dieu huong toi https://example.com",
+  "data": {
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAQAElEQVR4nOz9efwN9f//j48lu4jIvmYXCslSdqUiW7YiW1FUikSltJeKVKRoIUSyi+z7WpF937Pv+5Lld/2dx/f9+MxrzpzzPM8FT7ld/ziXOTOPecxjm8f99rjf58xJfOTIEUcIIYQQ4ibg1ltvjTxxQkcIIYQQQgQhkSSEEEII4YNEkhBCCCGEDxJJQgghhBA+SCQJIYQQQvggkSSEEEKIm5revXv77pdIEkIIIcTNi1FIvjpJIkkIIYQQNylubRSskySShBBCCHEzEqyKPHsk
+--- browser_click {'text': 'More information'} ---
+{
+  "success": false,
+  "message": "Click loi: Locator.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for get_by_text(\"More information\").first\n"
+}
+--- browser_move_mouse {'coordinate_x': 10, 'coordinate_y': 10} ---
+{
+  "success": true,
+  "message": "Da di chuyen chuot",
+  "data": {
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAQAElEQVR4nOz9efwN9f//j48lu4jIvmYXCslSdqUiW7YiW1FUikSltJeKVKRoIUSyi+z7WpF937Pv+5Lld/2dx/f9+MxrzpzzPM8FT7ld/ziXOTOPecxjm8f99rjf58xJfOTIEUcIIYQQ4ibg1ltvjTxxQkcIIYQQQgQhkSSEEEII4YNEkhBCCCGEDxJJQgghhBA+SCQJIYQQQvggkSSEEEKIm5revXv77pdIEkIIIcTNi1FIvjpJIkkIIYQQNylubRSskySShBBCCHEzEqyKPHskkoQQQghx0xHqOST3/gT
+--- browser_press_key {'key': 'Escape'} ---
+{
+  "success": true,
+  "message": "Da nhan phim Escape",
+  "data": {
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAQAElEQVR4nOz9efwN9f//j48lu4jIvmYXCslSdqUiW7YiW1FUikSltJeKVKRoIUSyi+z7WpF937Pv+5Lld/2dx/f9+MxrzpzzPM8FT7ld/ziXOTOPecxjm8f99rjf58xJfOTIEUcIIYQQ4ibg1ltvjTxxQkcIIYQQQgQhkSSEEEII4YNEkhBCCCGEDxJJQgghhBA+SCQJIYQQQvggkSSEEEKIm5revXv77pdIEkIIIcTNi1FIvjpJIkkIIYQQNylubRSskySShBBCCHEzEqyKPHskkoQQQghx0xHqOST3/g
+--- browser_scroll_down {'to_bottom': True} ---
+{
+  "success": true,
+  "message": "Da cuon xuong",
+  "data": {
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAQAElEQVR4nOydddxU1fb/DyEgIUgj3d3d3SGNpJSCXwwQFMFLKHKvgIIoIgqChEp3d7d0g3R3p8Dv/Zv1uvt17pkz55nnoR5gvf+Y15kz++w+e332WmdmIl+8eNFSFEVRFEV5CXjttdeCTxzRUhRFURRFUfxQkaQoiqIoiuKCiiRFURRFURQXVCQpiqIoiqK4oCJJURRFURTFBRVJiqIoiqK81AwYMMD1vIokRVEURVFeXkQhueokFUmKoiiKoryk2LWRv05SkaQoyjPmyJEjY8aM2b59u6UoivIU8VdFjjMqkhRF
+--- browser_scroll_up {'to_top': True} ---
+{
+  "success": true,
+  "message": "Da cuon len",
+  "data": {
+    "url": "https://example.com/",
+    "title": "Example Domain",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAQAElEQVR4nOz9efwN9f//j48lu4jIvmYXCslSdqUiW7YiW1FUikSltJeKVKRoIUSyi+z7WpF937Pv+5Lld/2dx/f9+MxrzpzzPM8FT7ld/ziXOTOPecxjm8f99rjf58xJfOTIEUcIIYQQ4ibg1ltvjTxxQkcIIYQQQgQhkSSEEEII4YNEkhBCCCGEDxJJQgghhBA+SCQJIYQQQvggkSSEEEKIm5revXv77pdIEkIIIcTNi1FIvjpJIkkIIYQQNylubRSskySShBBCCHEzEqyKPHskkoQQQghx0xHqOST3/gT6WxIhhB
+--- browser_console_exec {'javascript': '1+2'} ---
+{
+  "success": true,
+  "message": "Da chay javascript",
+  "data": {
+    "result": 3
+  }
+}
+--- browser_console_view {'max_lines': 10} ---
+{
+  "success": true,
+  "message": "Co 0 dong log",
+  "data": {
+    "logs": []
+  }
+}
+--- browser_restart {'url': 'https://example.org'} ---
+{
+  "success": true,
+  "message": "Da mo tab moi va dieu huong toi https://example.org",
+  "data": {
+    "url": "https://example.org/",
+    "title": "Example Domain",
+    "screenshot": "iVBORw0KGgoAAAANSUhEUgAAAwwAAAHtCAIAAAA7mm4iAAAQAElEQVR4nOz9efwN9f//j48lu4jIvmYXCslSdqUiW7YiW1FUikSltJeKVKRoIUSyi+z7WpF937Pv+5Lld/2dx/f9+MxrzpzzPM8FT7ld/ziXOTOPecxjm8f99rjf58xJfOTIEUcIIYQQ4ibg1ltvjTxxQkcIIYQQQgQhkSSEEEII4YNEkhBCCCGEDxJJQgghhBA+SCQJIYQQQvggkSSEEEKIm5revXv77pdIEkIIIcTNi1FIvjpJIkkIIYQQNylubRSskySShB
+--- message_ask_user {'text': 'ban co muon tiep tuc khong?', 'suggest_user_takeover': 'none'} ---
+Da ghi nhan message_ask_user, dang cho nguoi dung tra loi.

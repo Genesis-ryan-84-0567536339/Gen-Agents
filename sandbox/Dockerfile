@@ -10,7 +10,7 @@ ENV HOSTNAME=sandbox
 
 # Update and install basic tools
 RUN apt-get update && apt-get install -y \
-    sudo \
+    ca-certificates \
     bc \
     curl \
     wget \
@@ -23,12 +23,40 @@ RUN apt-get update && apt-get install -y \
     socat \
     supervisor \
     websockify \
+    pandoc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create user ubuntu and grant sudo privileges
-RUN useradd -m -d /home/ubuntu -s /bin/bash ubuntu && \
-    echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu
+# Tao user ubuntu (KHONG cap sudo — luat cung muc 6 cua docs/spec/00-tong-quan.md:
+# "bo sudo NOPASSWD khoi image sandbox". ubuntu la user chay MCP server + CLI
+# engine (agy/claude), giu HOME tam cua phien dang nhap CLI — khong duoc co
+# duong leo thang quyen root).
+RUN useradd -m -d /home/ubuntu -s /bin/bash ubuntu
+
+# Tao user rieng cho Chrome, khac voi user ubuntu dang chay CLI/MCP (luat cung
+# muc 6: "Chrome chay user khac voi CLI"). Xvfb/x11vnc van chay bang root (nhu
+# truoc), chi tien trinh Chrome tu chuyen sang user nay — X11 socket
+# (/tmp/.X11-unix) khong dung co che xac thuc (Xvfb khong truyen -auth) nen
+# user nay van ket noi duoc vao DISPLAY :1.
+RUN useradd -m -d /home/browser -s /usr/sbin/nologin browser && \
+    mkdir -p /home/browser/.chrome-profile && \
+    chown -R browser:browser /home/browser
+
+# Cai agy (Antigravity CLI) — khong co goi apt/npm chinh thuc, cai qua script
+# bootstrap chinh thuc cua antigravity.google (da kiem tra noi dung script:
+# khong sudo, chi dung curl/tar/sha512sum, co kiem tra checksum SHA512 truoc
+# khi cai) — xem https://antigravity.google/docs/getting-started?tab=cli
+# ("Install the client (fast path)"). Cai bang user ubuntu vi binary duoc ghi
+# vao $HOME/.local/bin cua chinh user chay installer (dong co CLI lop 3, xem
+# docs/spec/01-dong-co-cli.md).
+USER ubuntu
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
+USER root
+ENV PATH="/home/ubuntu/.local/bin:${PATH}"
+
+# Thu muc ket qua nhiem vu — CLI (agy/claude) ghi file xuat ra day (DoD dong 3
+# cua docs/spec/00-tong-quan.md: ".docx tai duoc tu UI")
+RUN mkdir -p /home/ubuntu/output && chown ubuntu:ubuntu /home/ubuntu/output
 
 # Install Python 3.10.12
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -54,6 +82,17 @@ RUN mkdir -p /etc/apt/keyrings && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure npm to use Aliyun mirror
+
+# Cai Claude Code CLI (npm global) — dong co CLI lop 3 thu hai, xem
+# docs/spec/01-dong-co-cli.md muc 4. Ghim version cu the (review Opus PR #36)
+# thay vi "latest" de build lap lai duoc — 2.1.295 la ban moi nhat tren npm
+# tai thoi diem viet (kiem bang `npm view @anthropic-ai/claude-code version`,
+# 09/10/2026). Nang version: doi so nay + ghi lai ngay kiem tra.
+RUN npm install -g @anthropic-ai/claude-code@2.1.295
+
+# Cai python-docx (xuat file .docx) — DoD dong 3 cua docs/spec/00-tong-quan.md
+# can cong cu xuat .docx; pandoc da cai o buoc "basic tools" phia tren
+RUN pip3 install python-docx
 
 # Install Google Chrome
 RUN add-apt-repository ppa:xtradeb/apps -y && \
